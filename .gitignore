@@ -1,1 +1,8 @@
+# runtime
 .env
+ringring.db
+avatars/
+timelines/
+
+# binaries
+./ringring
