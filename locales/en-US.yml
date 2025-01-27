@@ -1,0 +1,103 @@
+form:
+  settings:
+    title:
+      guild: Server Settings
+      category: Category Settings - %[1]s
+      channel: Channel Settings - %[1]s
+    description:
+      guild: Change the server notification settings.
+      category: Change the category notification settings.
+      channel: Change the channel notification settings.
+    fields:
+      notification:
+        title: Notifications
+        update: Set notifications to %[1]s
+        values:
+          true: Allowed
+          false: Disallowed
+      notification-channel:
+        title: Notification Channel
+        update: Set the notification channel to %[1]s
+      channel-format:
+        title: Channel Name Display Format
+        update: Set the channel name display format to %[1]s
+        values:
+          unknown: Not Set
+          display: Display Name
+          mention: Channel Mention
+      history:
+        title: Member Display
+        update: Set member display to %[1]s
+        values:
+          unknown: Not Set
+          none: None
+          name: Name Only
+          name_with_duration: Name and Join Duration
+          name_with_duration_and_timeline: Name, Join Duration, and Timeline
+      username-format:
+        title: Member Name Display Format
+        update: Set member name display format to %[1]s
+        values:
+          unknown: Not Set
+          username: Username
+          display: Display Name
+          mention: Mention
+    buttons:
+      toggle-enability:
+        true: Turn On
+        false: Turn Off
+      save: 
+        primary: Save
+        confirm-status: Do you want to save these settings?
+        confirm: Yes
+        cancel: Back
+      delete:
+        primary: Delete
+        confirm-status: Do you want to delete these settings?
+        confirm: Delete
+        cancel: Back
+      discard: Discard
+    validate:
+      success: Settings saved
+      error:
+        no-notification-channel: No notification channel is set
+        no-channel-format: No channel name display format is set
+        no-privacy: No member display is set
+        no-username-format: No member name display format is set
+
+command:
+  settings:
+    description: Change notification settings
+    subcommands:
+      guild:
+        description: Change notification settings at the server scope
+      category:
+        description: Change notification settings at the category scope
+        options:
+          category:
+            description: The category to set
+      channel:
+        description: Change notification settings at the channel scope
+        options:
+          channel:
+            description: The channel to set
+    response:
+      show-form: show the settings form
+      
+notification:
+  common:
+    start-time: Start Time
+    end-time: End Time
+    time-elapsed: Time Elapsed
+    history: History
+    timeformat:
+      days: " days "
+      hours: " hours "
+      minutes: " minutes "
+      seconds: " seconds"
+  ongoing: 
+    title: Call in Progress
+    description: A call in %[1]s is currently in progress
+  ended: 
+    title: Call Ended
+    description: A call in %[1]s has ended

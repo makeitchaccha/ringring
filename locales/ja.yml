@@ -1,0 +1,107 @@
+form:
+  settings:
+    title:
+      guild: サーバー設定
+      category: カテゴリー設定 - %[1]s
+      channel: チャンネル設定 - %[1]s
+    description:
+      guild: サーバーの通知設定を変更します。
+      category: カテゴリーの通知設定を変更します。
+      channel: チャンネルの通知設定を変更します。
+    fields:
+      notification:
+        title: 通知
+        update: 通知を %[1]s しました
+        values:
+          true: 許可
+          false: 禁止
+      notification-channel:
+        title: 通知チャンネル
+        update: 通知チャンネルを %[1]s に変更しました
+      channel-format:
+        title: チャンネル名の表示形式
+        update: チャンネル名の表示形式を%[1]sに変更しました
+        values:
+          unknown: 未設定
+          display: 表示名
+          mention: チャンネルメンション
+      history:
+        title: 履歴表示
+        update: 履歴表示を%[1]sに変更しました
+        values:
+          unknown: 未設定
+          none: なし
+          name: 名前のみ
+          name_with_duration: 名前と参加時間
+          name_with_duration_and_timeline: 名前と参加時間とタイムライン
+      username-format:
+        title: メンバー名の表示形式
+        update: メンバー名の表示形式を%[1]sに変更しました
+        values:
+          unknown: 未設定
+          username: ユーザー名
+          display: 表示名
+          mention: メンション
+    buttons:
+      toggle-enability:
+        true: 通知を許可
+        false: 通知を禁止
+      save: 
+        primary: 保存
+        confirm-status: このまま保存しますか？
+        confirm: はい
+        cancel: 戻る
+      delete:
+        primary: 削除
+        confirm-status: この設定を削除しますか？
+        confirm: 削除
+        cancel: 戻る
+      discard: 破棄
+    validate:
+      success: 設定を保存しました
+      error:
+        no-notification-channel: 通知チャンネルが設定されていません
+        no-channel-format: チャンネル名の表示形式が設定されていません
+        no-privacy: メンバーの表示が設定されていません
+        no-username-format: メンバー名の表示形式が設定されていません
+    error:
+      not-owner: フォームの作成者のみが設定を変更できます
+
+command:
+  settings:
+    description: 通知設定を変更します
+    subcommands:
+      guild:
+        description: サーバースコープで通知設定を変更します
+      category:
+        description: カテゴリースコープで通知設定を変更します
+        options:
+          category:
+            description: 設定するカテゴリー
+      channel:
+        description: チャンネルスコープで通知設定を変更します
+        options:
+          channel:
+            description: 設定するチャンネル
+      preview:
+        description: ギルド内の各チャンネルで通知がどのように表示されるかをプレビューします
+    response:
+      show-form: 設定フォームを表示します
+
+notification:
+  common:
+    start-time: 開始時刻
+    end-time: 終了時刻
+    time-elapsed: 経過時間
+    history: 履歴
+    timeformat:
+      days: 日
+      hours: 時間
+      minutes: 分
+      seconds: 秒
+  ongoing: 
+    title: 通話中
+    description: "%[1]sで通話中です"
+  ended: 
+    title: 通話終了
+    description: "%[1]sでの通話が終了しました"
