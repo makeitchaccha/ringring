@@ -2,6 +2,7 @@ package rule
 
 type Scope int
 
+// never change the order of the constants
 const (
 	ScopeGuild Scope = iota
 	ScopeCategory
