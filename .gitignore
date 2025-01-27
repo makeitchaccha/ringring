@@ -4,5 +4,5 @@ ringring.db
 avatars/
 timelines/
 
-# binaries
-ringring
+# builds
+build/
