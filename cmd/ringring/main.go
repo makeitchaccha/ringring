@@ -9,21 +9,10 @@ import (
 	"syscall"
 
 	"github.com/yuyaprgrm/ringring/internal/app/bot"
-	"github.com/yuyaprgrm/ringring/internal/pkg/call"
 	"github.com/yuyaprgrm/ringring/internal/pkg/locale"
-	"github.com/yuyaprgrm/ringring/internal/pkg/rule"
-	"github.com/yuyaprgrm/ringring/pkg/command"
-	"github.com/yuyaprgrm/ringring/pkg/form"
 	"github.com/yuyaprgrm/ringring/pkg/visualizer"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
-)
-
-var (
-	commandManager command.Manager
-	formManager    form.Manager
-	ruleManager    rule.Manager
-	callManager    call.Manager
 )
 
 func main() {
