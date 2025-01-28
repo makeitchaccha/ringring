@@ -22,7 +22,10 @@ func main() {
 	if !ok {
 		path = "timeliner" // use global timeliner
 	}
-	visualizer.Init(path)
+	if err := visualizer.Init(path); err != nil {
+		fmt.Fprintln(os.Stderr, "failed to initialize visualizer:", err)
+		os.Exit(1)
+	}
 	os.Mkdir("timelines", 0755)
 	os.Mkdir("avatars", 0755)
 
