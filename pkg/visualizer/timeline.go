@@ -13,6 +13,7 @@ import (
 
 type Timeline struct {
 	StartTime time.Time
+	Indicator time.Time
 	EndTime   time.Time
 	Entries   []Entry
 }
@@ -111,6 +112,14 @@ func (t Timeline) Generate() io.Reader {
 	dc.DrawLine(timelineBounds.Min.X, timelineBounds.Min.Y, timelineBounds.Min.X, timelineBounds.Max.Y)
 	dc.DrawLine(timelineBounds.Max.X, timelineBounds.Min.Y, timelineBounds.Max.X, timelineBounds.Max.Y)
 	dc.Stroke()
+
+	// Draw indicator line if it is set
+	if !t.Indicator.IsZero() {
+		x := timelineBounds.Min.X + (timelineBounds.Dx() * t.Indicator.Sub(t.StartTime).Seconds() / total)
+		dc.SetColor(color.RGBA{128, 0, 0, 255})
+		dc.DrawLine(x, timelineBounds.Min.Y, x, timelineBounds.Max.Y)
+		dc.Stroke()
+	}
 
 	r, w := io.Pipe()
 	go func() {

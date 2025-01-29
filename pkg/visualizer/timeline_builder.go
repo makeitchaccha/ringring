@@ -18,6 +18,11 @@ func (b *TimelineBuilder) AddEntries(entries ...Entry) *TimelineBuilder {
 	return b
 }
 
+func (b *TimelineBuilder) SetIndicator(indicator time.Time) *TimelineBuilder {
+	b.Indicator = indicator
+	return b
+}
+
 func (b *TimelineBuilder) Build() Timeline {
 	return b.Timeline
 }
