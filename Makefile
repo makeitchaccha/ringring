@@ -14,5 +14,5 @@ vet: fmt
 
 build: vet
 	go mod tidy
-	go build -o build/ringring cmd/ringring/main.go
+	go build -ldflags="-s -w" -o build/ringring cmd/ringring/main.go
 .PHONY: build
