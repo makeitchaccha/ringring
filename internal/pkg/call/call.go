@@ -2,16 +2,16 @@ package call
 
 import (
 	"fmt"
-	"io"
+	"image"
 	"net/http"
 	"os"
-	"path/filepath"
 	"strings"
 	"time"
 
 	"github.com/disgoorg/disgo/discord"
 	"github.com/disgoorg/disgo/rest"
 	"github.com/disgoorg/snowflake/v2"
+	"github.com/nfnt/resize"
 	"github.com/yuyaprgrm/ringring/internal/pkg/locale"
 	"github.com/yuyaprgrm/ringring/internal/pkg/rule"
 	"github.com/yuyaprgrm/ringring/pkg/visualizer"
@@ -94,6 +94,8 @@ func (c *Call) GenerateTimeline(rest rest.Rest) (*discord.File, error) {
 	// fetch user avatars
 	// we should cache the avatars to avoid rate limit
 	// but done is better than perfect.
+	avatars := make(map[snowflake.ID]image.Image)
+
 	for userID := range c.MemberMap {
 		user, _ := rest.GetUser(userID)
 		resp, err := http.Get(user.EffectiveAvatarURL(discord.WithSize(64), discord.WithFormat(discord.FileFormatPNG)))
@@ -101,55 +103,32 @@ func (c *Call) GenerateTimeline(rest rest.Rest) (*discord.File, error) {
 			fmt.Fprintln(os.Stderr, "failed to fetch avatar:", err)
 			continue
 		}
-		defer resp.Body.Close()
-		buf, err := io.ReadAll(resp.Body)
+		avatar, _, err := image.Decode(resp.Body)
 		if err != nil {
-			fmt.Fprintln(os.Stderr, "failed to read body:", err)
+			fmt.Fprintln(os.Stderr, "failed to decode avatar:", err)
 			continue
 		}
-		os.WriteFile(filepath.Join("avatars", user.ID.String()+".png"), buf, 0644)
+
+		if avatar.Bounds().Dx() != 64 || avatar.Bounds().Dy() != 64 {
+			fmt.Fprintln(os.Stderr, "avatar is not 64x64")
+			// try to resize the image
+			avatar = resize.Resize(64, 64, avatar, resize.Lanczos3)
+		}
+
+		avatars[userID] = avatar
 	}
 
 	// generate timeline
-	total := c.End.Sub(c.Start).Seconds()
-
-	main := (24 * time.Hour).Seconds() / total
-	sub := (1 * time.Hour).Seconds() / total
-
-	request := visualizer.Request{}
-	request.Layout = &visualizer.Layout{
-		Padding:        visualizer.TRBL{Top: 10, Right: 10, Bottom: 10, Left: 10},
-		EntryHeight:    70,
-		HeadlineWidth:  100,
-		TimelineWidth:  900,
-		OnlineBarWidth: 20,
-		MainTics:       &main,
-		SubTics:        &sub,
-	}
-	for _, u := range c.Members {
-		user := visualizer.User{}
-		user.AvatarLocation = filepath.Join("avatars", u.id.String()+".png")
-		for _, log := range u.logs {
-			section := visualizer.Section{
-				Start: log.join.Sub(c.Start).Seconds() / total,
-				End:   log.leave.Sub(c.Start).Seconds() / total,
-			}
-			user.Sections = append(user.Sections, section)
+	builder := visualizer.NewTimelineBuilder(c.Start, c.End)
+	for _, m := range c.Members {
+		e := visualizer.NewEntryBuilder(avatars[m.id], nil)
+		for _, log := range m.logs {
+			e.AddSection(log.join, log.leave)
 		}
-		request.Users = append(request.Users, user)
+		builder.AddEntries(e.Build())
 	}
 
-	filename := fmt.Sprintf("timelines/%s.png", snowflake.New(time.Now()))
-	err := visualizer.Generate(request, filename)
-
-	if err != nil {
-		return nil, fmt.Errorf("failed to generate timeline: %w", err)
-	}
-
-	r, err := os.Open(filename)
-	if err != nil {
-		return nil, fmt.Errorf("failed to open file: %w", err)
-	}
+	r := builder.Build().Generate()
 
 	return &discord.File{
 		Name:   "thumbnail.png",

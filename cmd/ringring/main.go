@@ -10,7 +10,6 @@ import (
 
 	"github.com/yuyaprgrm/ringring/internal/app/bot"
 	"github.com/yuyaprgrm/ringring/internal/pkg/locale"
-	"github.com/yuyaprgrm/ringring/pkg/visualizer"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
@@ -18,16 +17,6 @@ import (
 func main() {
 
 	locale.Init("./locales")
-	path, ok := os.LookupEnv("RINGRING_VISUALIZER")
-	if !ok {
-		path = "timeliner" // use global timeliner
-	}
-	if err := visualizer.Init(path); err != nil {
-		fmt.Fprintln(os.Stderr, "failed to initialize visualizer:", err)
-		os.Exit(1)
-	}
-	os.Mkdir("timelines", 0755)
-	os.Mkdir("avatars", 0755)
 
 	db, err := gorm.Open(sqlite.Open("ringring.db"), &gorm.Config{})
 	if err != nil {
