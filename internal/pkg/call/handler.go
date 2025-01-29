@@ -7,6 +7,7 @@ import (
 	"github.com/disgoorg/disgo/discord"
 	"github.com/disgoorg/disgo/rest"
 	"github.com/disgoorg/snowflake/v2"
+	"github.com/yuyaprgrm/ringring/pkg/visualizer"
 )
 
 // handler helps to update the call status
@@ -95,17 +96,29 @@ func (h *handlerImpl) Update() error {
 		return nil
 	}
 
-	if h.updateCooldown.After(time.Now()) {
+	now := time.Now()
+	if h.updateCooldown.After(now) {
 		// update too fast
 		return nil
+	}
+
+	messageUpdate := discord.NewMessageUpdateBuilder().
+		AddEmbeds(h.call.OngoingEmbed(now))
+
+	if h.call.Rule.History.ShouldDisplayTimeline() {
+		frame := visualizer.GenFrame(h.call.Start, now)
+		file, err := h.call.GenerateTimeline(h.rest, now, frame, WithIndicator(now))
+		if err != nil {
+			fmt.Println("failed to generate timeline:", err)
+			return err
+		}
+		messageUpdate.AddFiles(file)
 	}
 
 	_, err := h.rest.UpdateMessage(
 		h.channelID,
 		h.messageID,
-		discord.MessageUpdate{
-			Embeds: &[]discord.Embed{h.call.OngoingEmbed(time.Now())},
-		},
+		messageUpdate.Build(),
 	)
 	h.updateCooldown = time.Now().Add(10 * time.Second)
 	return err
@@ -125,12 +138,13 @@ func (h *handlerImpl) Close(t time.Time) error {
 			h.call = nil
 		}()
 		retryInterval := 10 * time.Second
+		t := t
 		for retry := 0; retry < 3; retry++ {
 			messageUpdate := discord.NewMessageUpdateBuilder().
 				AddEmbeds(h.call.EndedEmbed())
 
 			if h.call.Rule.History.ShouldDisplayTimeline() {
-				file, err := h.call.GenerateTimeline(h.rest)
+				file, err := h.call.GenerateTimeline(h.rest, t, t)
 				if err != nil {
 					fmt.Println("failed to generate timeline:", err)
 					return

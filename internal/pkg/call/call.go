@@ -2,16 +2,13 @@ package call
 
 import (
 	"fmt"
-	"image"
-	"net/http"
-	"os"
 	"strings"
 	"time"
 
 	"github.com/disgoorg/disgo/discord"
 	"github.com/disgoorg/disgo/rest"
 	"github.com/disgoorg/snowflake/v2"
-	"github.com/nfnt/resize"
+	"github.com/yuyaprgrm/ringring/internal/pkg/cache"
 	"github.com/yuyaprgrm/ringring/internal/pkg/locale"
 	"github.com/yuyaprgrm/ringring/internal/pkg/rule"
 	"github.com/yuyaprgrm/ringring/pkg/visualizer"
@@ -66,6 +63,11 @@ func (c *Call) OngoingEmbed(now time.Time) discord.Embed {
 		builder.AddField(n.Common.History, c.history(now), false)
 	}
 
+	// testing ...
+	if c.Rule.History.ShouldDisplayTimeline() {
+		builder.SetImage("attachment://thumbnail.png")
+	}
+
 	return builder.Build()
 }
 
@@ -90,39 +92,33 @@ func (c *Call) EndedEmbed() discord.Embed {
 	return builder.Build()
 }
 
-func (c *Call) GenerateTimeline(rest rest.Rest) (*discord.File, error) {
-	// fetch user avatars
-	// we should cache the avatars to avoid rate limit
-	// but done is better than perfect.
-	avatars := make(map[snowflake.ID]image.Image)
+type GenerateOptions func(b *visualizer.TimelineBuilder)
 
-	for userID := range c.MemberMap {
-		user, _ := rest.GetUser(userID)
-		resp, err := http.Get(user.EffectiveAvatarURL(discord.WithSize(64), discord.WithFormat(discord.FileFormatPNG)))
-		if err != nil {
-			fmt.Fprintln(os.Stderr, "failed to fetch avatar:", err)
-			continue
-		}
-		avatar, _, err := image.Decode(resp.Body)
-		if err != nil {
-			fmt.Fprintln(os.Stderr, "failed to decode avatar:", err)
-			continue
-		}
-
-		if avatar.Bounds().Dx() != 64 || avatar.Bounds().Dy() != 64 {
-			fmt.Fprintln(os.Stderr, "avatar is not 64x64")
-			// try to resize the image
-			avatar = resize.Resize(64, 64, avatar, resize.Lanczos3)
-		}
-
-		avatars[userID] = avatar
+func WithIndicator(indicator time.Time) GenerateOptions {
+	return func(b *visualizer.TimelineBuilder) {
+		b.SetIndicator(indicator)
 	}
+}
+
+func (c *Call) GenerateTimeline(rest rest.Rest, now time.Time, frame time.Time, opts ...GenerateOptions) (*discord.File, error) {
 
 	// generate timeline
-	builder := visualizer.NewTimelineBuilder(c.Start, c.End)
+	builder := visualizer.NewTimelineBuilder(c.Start, frame)
+
+	for _, opt := range opts {
+		opt(builder)
+	}
+
 	for _, m := range c.Members {
-		e := visualizer.NewEntryBuilder(avatars[m.id], nil)
+		avatar, err := cache.GetAvatar(rest, m.id)
+		if err != nil {
+			return nil, err
+		}
+		e := visualizer.NewEntryBuilder(avatar, nil)
 		for _, log := range m.logs {
+			if log.leave.IsZero() {
+				log.leave = now
+			}
 			e.AddSection(log.join, log.leave)
 		}
 		builder.AddEntries(e.Build())
