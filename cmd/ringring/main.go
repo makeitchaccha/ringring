@@ -3,14 +3,13 @@ package main
 import (
 	"context"
 	"fmt"
-	"log/slog"
 	"os"
 	"os/signal"
 	"syscall"
 
 	"github.com/yuyaprgrm/ringring/internal/app/bot"
+	"github.com/yuyaprgrm/ringring/internal/pkg/config"
 	"github.com/yuyaprgrm/ringring/internal/pkg/locale"
-	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
 
@@ -18,7 +17,14 @@ func main() {
 
 	locale.Init("./locales")
 
-	db, err := gorm.Open(sqlite.Open("ringring.db"), &gorm.Config{})
+	config, err := config.New("config.yml")
+
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "failed to load config:", err)
+		os.Exit(1)
+	}
+
+	db, err := gorm.Open(config.GormDialector(), &gorm.Config{})
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "failed to open database:", err)
 		os.Exit(1)
@@ -36,7 +42,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	slog.Info("Test bot is now running.  Press CTRL-C to exit.")
+	fmt.Println("Notification Service: Ringring is now running.  Press CTRL-C to exit.")
 	s := make(chan os.Signal, 1)
 	signal.Notify(s, syscall.SIGINT, syscall.SIGTERM)
 	<-s
