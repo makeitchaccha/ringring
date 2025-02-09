@@ -16,6 +16,8 @@ github.com/jinzhu/inflection v1.0.0 h1:K317FqzuhWc8YvSVlFMCCUb36O/S9MCKRDI7QkRKD
 github.com/jinzhu/inflection v1.0.0/go.mod h1:h+uFLlag+Qp1Va5pdKtLDYj+kHp5pxUVkryuEj+Srlc=
 github.com/jinzhu/now v1.1.5 h1:/o9tlHleP7gOFmsnYNz3RGnqzefHA47wQpKrrdTIwXQ=
 github.com/jinzhu/now v1.1.5/go.mod h1:d3SSVoowX0Lcu0IBviAWJpolVfI5UJVZZ7cO71lE/z8=
+github.com/makeitchaccha/design v0.0.1 h1:0xSCI4BSuHxk+Ut4vgt1of9ByZrG/sIO/fi3jAZ05UM=
+github.com/makeitchaccha/design v0.0.1/go.mod h1:pLkzOv+V2xDhVHra0iTvmK2P3Eu3v/+t9JW5TVPZUa4=
 github.com/makeitchaccha/rendering v0.0.3 h1:S0YtnJtT70wX9JUzm0+eY749Fcj7vR4s0eYXqaTZQAQ=
 github.com/makeitchaccha/rendering v0.0.3/go.mod h1:P+2pnZEY66cUYxv3ufTS2wMhuHN8K4T9zFz61/b+hus=
 github.com/mattn/go-sqlite3 v1.14.24 h1:tpSp2G2KyMnnQu99ngJ47EIkWVmliIizyZBfPrBWDRM=

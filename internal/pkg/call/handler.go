@@ -7,7 +7,7 @@ import (
 	"github.com/disgoorg/disgo/discord"
 	"github.com/disgoorg/disgo/rest"
 	"github.com/disgoorg/snowflake/v2"
-	"github.com/yuyaprgrm/ringring/pkg/visualizer"
+	"github.com/makeitchaccha/design/timeline"
 )
 
 // handler helps to update the call status
@@ -106,7 +106,7 @@ func (h *handlerImpl) Update() error {
 		AddEmbeds(h.call.OngoingEmbed(now))
 
 	if h.call.Rule.History.ShouldDisplayTimeline() {
-		frame := visualizer.GenFrame(h.call.Start, now)
+		frame := timeline.GenFrame(h.call.Start, now)
 		file, err := h.call.GenerateTimeline(h.rest, now, frame, WithIndicator(now))
 		if err != nil {
 			fmt.Println("failed to generate timeline:", err)
@@ -124,27 +124,26 @@ func (h *handlerImpl) Update() error {
 	return err
 }
 
-func (h *handlerImpl) Close(t time.Time) error {
+func (h *handlerImpl) Close(currentTime time.Time) error {
 	if h.closed {
 		return nil
 	}
 
-	h.call.OnEnd(t)
+	h.call.OnEnd(currentTime)
 
 	// update the message to show the call has ended
 	// this is IMPORTANT MESSAGE, so we should retry if failed
-	go func() {
+	go func(currentTime time.Time) {
 		defer func() {
 			h.call = nil
 		}()
 		retryInterval := 10 * time.Second
-		t := t
 		for retry := 0; retry < 3; retry++ {
 			messageUpdate := discord.NewMessageUpdateBuilder().
 				AddEmbeds(h.call.EndedEmbed())
 
 			if h.call.Rule.History.ShouldDisplayTimeline() {
-				file, err := h.call.GenerateTimeline(h.rest, t, t)
+				file, err := h.call.GenerateTimeline(h.rest, currentTime, currentTime)
 				if err != nil {
 					fmt.Println("failed to generate timeline:", err)
 					return
@@ -159,7 +158,6 @@ func (h *handlerImpl) Close(t time.Time) error {
 			)
 
 			if err == nil {
-
 				break
 			}
 			fmt.Println("failed to update message:", err)
@@ -167,7 +165,7 @@ func (h *handlerImpl) Close(t time.Time) error {
 			time.Sleep(retryInterval)
 			retryInterval *= 2
 		}
-	}()
+	}(currentTime)
 
 	h.closed = true
 

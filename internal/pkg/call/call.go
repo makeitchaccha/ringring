@@ -8,10 +8,10 @@ import (
 	"github.com/disgoorg/disgo/discord"
 	"github.com/disgoorg/disgo/rest"
 	"github.com/disgoorg/snowflake/v2"
+	"github.com/makeitchaccha/design/timeline"
 	"github.com/yuyaprgrm/ringring/internal/pkg/cache"
 	"github.com/yuyaprgrm/ringring/internal/pkg/locale"
 	"github.com/yuyaprgrm/ringring/internal/pkg/rule"
-	"github.com/yuyaprgrm/ringring/pkg/visualizer"
 )
 
 type Call struct {
@@ -92,10 +92,10 @@ func (c *Call) EndedEmbed() discord.Embed {
 	return builder.Build()
 }
 
-type GenerateOptions func(b *visualizer.TimelineBuilder)
+type GenerateOptions func(b *timeline.TimelineBuilder)
 
 func WithIndicator(indicator time.Time) GenerateOptions {
-	return func(b *visualizer.TimelineBuilder) {
+	return func(b *timeline.TimelineBuilder) {
 		b.SetIndicator(indicator)
 	}
 }
@@ -103,7 +103,7 @@ func WithIndicator(indicator time.Time) GenerateOptions {
 func (c *Call) GenerateTimeline(rest rest.Rest, now time.Time, frame time.Time, opts ...GenerateOptions) (*discord.File, error) {
 
 	// generate timeline
-	builder := visualizer.NewTimelineBuilder(c.Start, frame)
+	builder := timeline.NewTimelineBuilder(c.Start, frame)
 
 	for _, opt := range opts {
 		opt(builder)
@@ -114,7 +114,7 @@ func (c *Call) GenerateTimeline(rest rest.Rest, now time.Time, frame time.Time, 
 		if err != nil {
 			return nil, err
 		}
-		e := visualizer.NewEntryBuilder(avatar, nil)
+		e := timeline.NewEntryBuilder(avatar, nil)
 		for _, log := range m.logs {
 			if log.leave.IsZero() {
 				log.leave = now
