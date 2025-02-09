@@ -1,0 +1,15 @@
+# example config file for RingRing
+# you can also use environment variables to set these values
+
+database:
+  # Database driver, mysql, postgres, sqlite
+  # $DATABASE_DRIVER for environment variable
+  driver: sqlite
+  # Database source name
+  # $DATABASE_DSN for environment variable 
+  dsn: "ringring.db"
+
+discord:
+  # Bot token
+  # $DISCORD_TOKEN for environment variable
+  token: "your_token_here"

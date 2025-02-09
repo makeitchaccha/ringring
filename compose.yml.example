@@ -1,0 +1,20 @@
+services:
+  bot:
+    image: ringring
+    environment:
+      DATABASE_DRIVER: postgres
+      DATABASE_DSN: "host=database user=ringring password=shallnotpass dbname=ringring sslmode=disable"
+      DISCORD_TOKEN: "your_token_here"
+    depends_on:
+      - database
+      
+  database:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: ringring
+      POSTGRES_PASSWORD: shallnotpass
+    volumes:
+      - database:/var/lib/postgresql/data
+
+volumes:
+  database: 
