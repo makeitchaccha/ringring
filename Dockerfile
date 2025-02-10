@@ -5,7 +5,6 @@ WORKDIR /app
 COPY go.mod go.sum ./
 RUN go mod download
 COPY . .
-ARG CGO_ENABLED=0
 ARG GOOS=linux
 ARG GOARCH=amd64
 RUN go build -ldflags="-s -w" -o ringring cmd/ringring/main.go
