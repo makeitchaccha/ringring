@@ -5,16 +5,18 @@ WORKDIR /app
 COPY go.mod go.sum ./
 RUN go mod download
 COPY . .
+ARG CGO_ENABLED=1
 ARG GOOS=linux
 ARG GOARCH=amd64
 RUN go build -ldflags="-s -w" -o ringring cmd/ringring/main.go
 
 # Stage 2: Create a small image with the Go binary
-FROM alpine:latest AS runner
+FROM debian:stable-slim AS runner
 WORKDIR /app
-RUN apk update && apk add --no-cache fontconfig font-noto font-noto-cjk
+RUN apt update
+RUN apt install -y fontconfig fonts-noto-core fonts-noto-cjk sqlite3 ca-certificates
 COPY --from=builder /app/ringring ./ringring
 COPY --from=builder /app/locales ./locales
 
 # Command to run the executable
-ENTRYPOINT [ "./ringring" ]
+ENTRYPOINT [ "/app/ringring" ]
