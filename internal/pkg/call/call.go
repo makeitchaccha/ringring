@@ -124,6 +124,14 @@ func (c *Call) GenerateTimeline(rest rest.Rest, now time.Time, frame time.Time, 
 		builder.AddEntries(e.Build())
 	}
 
+	// prevent generated timeline from being too long in the vertical direction
+	// so called 1x1 aspect ratio policy.
+	layout := timeline.DefaultLayout()
+	if h, w := len(c.Members)*int(layout.EntryHeight), int(layout.HeadlineWidth+layout.TimelineWidth); h > w {
+		// adjust width to fit the timeline
+		layout.TimelineWidth = float64(w) - layout.HeadlineWidth
+	}
+
 	r := builder.Build().Generate()
 
 	return &discord.File{
