@@ -6,7 +6,7 @@ require (
 	github.com/disgoorg/disgo v0.18.14
 	github.com/disgoorg/json v1.2.0
 	github.com/disgoorg/snowflake/v2 v2.0.3
-	github.com/makeitchaccha/design v0.0.7
+	github.com/makeitchaccha/design v0.1.0
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
 	github.com/stretchr/testify v1.10.0
 	golang.org/x/image v0.23.0
