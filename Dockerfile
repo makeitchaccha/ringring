@@ -14,7 +14,7 @@ RUN go build -ldflags="-s -w" -o ringring cmd/ringring/main.go
 FROM debian:stable-slim AS runner
 WORKDIR /app
 RUN apt update
-RUN apt install -y fontconfig fonts-noto-core fonts-noto-cjk sqlite3 ca-certificates
+RUN apt install -y sqlite3 ca-certificates
 COPY --from=builder /app/ringring ./ringring
 COPY --from=builder /app/locales ./locales
 
