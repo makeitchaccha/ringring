@@ -1,6 +1,6 @@
 services:
   bot:
-    image: ringring
+    image: ghcr.io/makeitchaccha/ringring
     environment:
       DATABASE_DRIVER: postgres
       DATABASE_DSN: "host=database user=ringring password=shallnotpass dbname=ringring sslmode=disable"
