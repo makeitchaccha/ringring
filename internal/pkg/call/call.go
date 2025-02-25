@@ -125,11 +125,12 @@ func (c *Call) GenerateTimeline(rest rest.Rest, now time.Time, frame time.Time, 
 	}
 
 	// prevent generated timeline from being too long in the vertical direction
-	// so called 1x1 aspect ratio policy.
+	// w:h = 4:3 is used in the thumbnail
 	layout := timeline.DefaultLayout()
-	if h, w := len(c.Members)*int(layout.EntryHeight), int(layout.HeadlineWidth+layout.TimelineWidth); h > w {
+	if h, w := builder.Height(), builder.Width(); 4*h > 3*w {
 		// adjust width to fit the timeline
-		layout.TimelineWidth = float64(w) - layout.HeadlineWidth
+		dw := 4*h/3 - w
+		layout.TimelineWidth += dw
 	}
 
 	r := builder.Build().Generate()
