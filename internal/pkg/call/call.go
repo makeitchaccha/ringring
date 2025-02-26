@@ -133,6 +133,8 @@ func (c *Call) GenerateTimeline(rest rest.Rest, now time.Time, frame time.Time, 
 		layout.TimelineWidth += dw
 	}
 
+	builder.SetLayout(layout)
+
 	r := builder.Build().Generate()
 
 	return &discord.File{
