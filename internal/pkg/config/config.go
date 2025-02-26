@@ -121,10 +121,11 @@ func loadConfig(path string) (*configDTO, error) {
 }
 
 func overrideWithEnv(cfg *configDTO) bool {
-	overridden := overrideString("DISCORD_TOKEN", &cfg.Discord.Token) ||
-		overrideString("DATABASE_DRIVER", &cfg.Database.Driver) ||
-		overrideString("DATABASE_DSN", &cfg.Database.DSN) ||
-		overrideString("DISCORD_FONT", &cfg.Discord.Font)
+	overridden := false
+	overridden = overrideString("DISCORD_TOKEN", &cfg.Discord.Token) || overridden
+	overridden = overrideString("DATABASE_DRIVER", &cfg.Database.Driver) || overridden
+	overridden = overrideString("DATABASE_DSN", &cfg.Database.DSN) || overridden
+	overridden = overrideString("DISCORD_FONT", &cfg.Discord.Font) || overridden
 
 	return overridden
 }
