@@ -192,7 +192,7 @@ func (b *botImpl) onJoinVoiceChannel(channelID snowflake.ID, member *discord.Mem
 			fmt.Println("rule is not enabled, skip")
 			return
 		}
-		handler, err = b.callManager.Add(call.New(discord.LocaleJapanese, rule, channel), now)
+		handler, err = b.callManager.Add(call.New(discord.LocaleJapanese, rule, channel, b.font), now)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, "failed to create call:", err)
 			return

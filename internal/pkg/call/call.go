@@ -8,6 +8,7 @@ import (
 	"github.com/disgoorg/disgo/discord"
 	"github.com/disgoorg/disgo/rest"
 	"github.com/disgoorg/snowflake/v2"
+	"github.com/golang/freetype/truetype"
 	"github.com/makeitchaccha/design/timeline"
 	"github.com/yuyaprgrm/ringring/internal/pkg/cache"
 	"github.com/yuyaprgrm/ringring/internal/pkg/locale"
@@ -16,6 +17,7 @@ import (
 
 type Call struct {
 	Locale      discord.Locale
+	Font        *truetype.Font
 	Rule        rule.Rule
 	ChannelID   snowflake.ID
 	ChannelName string
@@ -26,9 +28,10 @@ type Call struct {
 	Onlines     int
 }
 
-func New(locale discord.Locale, rule rule.Rule, channel discord.Channel) *Call {
+func New(locale discord.Locale, rule rule.Rule, channel discord.Channel, font *truetype.Font) *Call {
 	return &Call{
 		Locale:      locale,
+		Font:        font,
 		Rule:        rule,
 		ChannelID:   channel.ID(),
 		ChannelName: rule.ChannelFormat.Format(channel),
@@ -134,6 +137,14 @@ func (c *Call) GenerateTimeline(rest rest.Rest, now time.Time, frame time.Time, 
 	}
 
 	builder.SetLayout(layout)
+
+	// font modification
+	ticsFont := truetype.NewFace(c.Font, &truetype.Options{
+		Size: 15,
+	})
+
+	builder.MainTics.Label.Font = ticsFont
+	builder.SubTics.Label.Font = ticsFont
 
 	r := builder.Build().Generate()
 

@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/golang/freetype/truetype"
+	"golang.org/x/image/font/gofont/goregular"
 	"gopkg.in/yaml.v3"
 	"gorm.io/driver/mysql"
 	"gorm.io/driver/postgres"
@@ -74,6 +75,12 @@ func New(path string) (*Config, error) {
 		f, err := LoadFont(raw.Discord.Font)
 		if err != nil {
 			return nil, fmt.Errorf("failed to load font: %w", err)
+		}
+		font = f
+	} else {
+		f, err := truetype.Parse(goregular.TTF)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse font: %w", err)
 		}
 		font = f
 	}
