@@ -24,13 +24,19 @@ func main() {
 		os.Exit(1)
 	}
 
-	db, err := gorm.Open(config.GormDialector(), &gorm.Config{})
+	db, err := gorm.Open(config.Dialector, &gorm.Config{})
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "failed to open database:", err)
 		os.Exit(1)
 	}
 
-	bot, err := bot.New(os.Getenv("DISCORD_TOKEN"), db)
+	opts := make([]bot.ConfigOpt, 0)
+
+	if config.Font != nil {
+		opts = append(opts, bot.WithFont(config.Font))
+	}
+
+	bot, err := bot.New(os.Getenv("DISCORD_TOKEN"), db, opts...)
 
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "failed to create bot:", err)

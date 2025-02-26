@@ -13,12 +13,14 @@ import (
 	"github.com/disgoorg/disgo/events"
 	"github.com/disgoorg/disgo/gateway"
 	"github.com/disgoorg/snowflake/v2"
+	"github.com/golang/freetype/truetype"
 	"github.com/yuyaprgrm/ringring/internal/pkg/call"
 	"github.com/yuyaprgrm/ringring/internal/pkg/icommand"
 	"github.com/yuyaprgrm/ringring/internal/pkg/locale"
 	"github.com/yuyaprgrm/ringring/internal/pkg/rule"
 	"github.com/yuyaprgrm/ringring/pkg/command"
 	"github.com/yuyaprgrm/ringring/pkg/form"
+	"golang.org/x/image/font/gofont/goregular"
 	"gorm.io/gorm"
 )
 
@@ -31,6 +33,7 @@ var _ Bot = (*botImpl)(nil)
 
 type botImpl struct {
 	client bot.Client
+	font   *truetype.Font
 
 	callManager    call.Manager
 	formManager    form.Manager
@@ -40,7 +43,15 @@ type botImpl struct {
 	cancelClose map[snowflake.ID]chan<- struct{}
 }
 
-func New(token string, db *gorm.DB) (Bot, error) {
+type ConfigOpt func(*botImpl)
+
+func WithFont(font *truetype.Font) ConfigOpt {
+	return func(b *botImpl) {
+		b.font = font
+	}
+}
+
+func New(token string, db *gorm.DB, opts ...ConfigOpt) (Bot, error) {
 
 	locale.Init("./locales")
 
@@ -72,13 +83,24 @@ func New(token string, db *gorm.DB) (Bot, error) {
 	// initialize call manager
 	callManager := call.NewManager(client.Rest())
 
+	font, err := truetype.Parse(goregular.TTF)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse font: %w", err)
+	}
+
 	b := &botImpl{
 		client:         client,
+		font:           font,
 		callManager:    callManager,
 		formManager:    formManager,
 		ruleManager:    ruleManager,
 		commandManager: commandManager,
 		cancelClose:    make(map[snowflake.ID]chan<- struct{}),
+	}
+
+	for _, opt := range opts {
+		opt(b)
 	}
 
 	client.AddEventListeners(bot.NewListenerFunc(b.onVoiceStateUpdate))

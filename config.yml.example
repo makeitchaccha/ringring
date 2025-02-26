@@ -13,3 +13,6 @@ discord:
   # Bot token
   # $DISCORD_TOKEN for environment variable
   token: "your_token_here"
+  
+  # comment in if you want to use custom font
+  # font: "path/to/font.ttf"
