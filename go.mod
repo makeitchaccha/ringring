@@ -1,6 +1,6 @@
 module github.com/yuyaprgrm/ringring
 
-go 1.23.4
+go 1.24.0
 
 require (
 	github.com/disgoorg/disgo v0.18.15
@@ -31,6 +31,7 @@ require (
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/kr/text v0.2.0 // indirect
+	github.com/makeitchaccha/knowledge v0.0.4 // indirect
 	github.com/makeitchaccha/rendering v0.0.3 // indirect
 	github.com/mattn/go-sqlite3 v1.14.24 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
