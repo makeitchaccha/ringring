@@ -28,32 +28,32 @@ func (s *Settings) Create() discord.ApplicationCommandCreate {
 	return discord.SlashCommandCreate{
 		Name:        s.Name(),
 		Description: locale.Get(discord.LocaleEnglishUS).Command.Settings.Description,
-		DescriptionLocalizations: map[discord.Locale]string{
-			discord.LocaleJapanese: locale.Get(discord.LocaleJapanese).Command.Settings.Description,
-		},
+		DescriptionLocalizations: locale.Localizations(func(entry locale.Entry) string {
+			return entry.Command.Settings.Description
+		}),
 		DefaultMemberPermissions: json.NewNullablePtr(discord.PermissionManageGuild),
 
 		Options: []discord.ApplicationCommandOption{
 			discord.ApplicationCommandOptionSubCommand{
 				Name:        "guild",
 				Description: locale.Get(discord.LocaleEnglishUS).Command.Settings.SubCommands.Guild.Description,
-				DescriptionLocalizations: map[discord.Locale]string{
-					discord.LocaleJapanese: locale.Get(discord.LocaleJapanese).Command.Settings.SubCommands.Guild.Description,
-				},
+				DescriptionLocalizations: locale.Localizations(func(entry locale.Entry) string {
+					return entry.Command.Settings.SubCommands.Guild.Description
+				}),
 			},
 			discord.ApplicationCommandOptionSubCommand{
 				Name:        "category",
 				Description: locale.Get(discord.LocaleEnglishUS).Command.Settings.SubCommands.Category.Description,
-				DescriptionLocalizations: map[discord.Locale]string{
-					discord.LocaleJapanese: locale.Get(discord.LocaleJapanese).Command.Settings.SubCommands.Category.Description,
-				},
+				DescriptionLocalizations: locale.Localizations(func(entry locale.Entry) string {
+					return entry.Command.Settings.SubCommands.Category.Description
+				}),
 				Options: []discord.ApplicationCommandOption{
 					discord.ApplicationCommandOptionChannel{
 						Name:        "category",
 						Description: locale.Get(discord.LocaleEnglishUS).Command.Settings.SubCommands.Category.Options.Category.Description,
-						DescriptionLocalizations: map[discord.Locale]string{
-							discord.LocaleJapanese: locale.Get(discord.LocaleJapanese).Command.Settings.SubCommands.Category.Options.Category.Description,
-						},
+						DescriptionLocalizations: locale.Localizations(func(entry locale.Entry) string {
+							return entry.Command.Settings.SubCommands.Category.Options.Category.Description
+						}),
 						Required: true,
 						ChannelTypes: []discord.ChannelType{
 							discord.ChannelTypeGuildCategory,
@@ -64,16 +64,16 @@ func (s *Settings) Create() discord.ApplicationCommandCreate {
 			discord.ApplicationCommandOptionSubCommand{
 				Name:        "channel",
 				Description: locale.Get(discord.LocaleEnglishUS).Command.Settings.SubCommands.Channel.Description,
-				DescriptionLocalizations: map[discord.Locale]string{
-					discord.LocaleJapanese: locale.Get(discord.LocaleJapanese).Command.Settings.SubCommands.Channel.Description,
-				},
+				DescriptionLocalizations: locale.Localizations(func(entry locale.Entry) string {
+					return entry.Command.Settings.SubCommands.Channel.Description
+				}),
 				Options: []discord.ApplicationCommandOption{
 					discord.ApplicationCommandOptionChannel{
 						Name:        "channel",
 						Description: locale.Get(discord.LocaleEnglishUS).Command.Settings.SubCommands.Channel.Options.Channel.Description,
-						DescriptionLocalizations: map[discord.Locale]string{
-							discord.LocaleJapanese: locale.Get(discord.LocaleJapanese).Command.Settings.SubCommands.Channel.Options.Channel.Description,
-						},
+						DescriptionLocalizations: locale.Localizations(func(entry locale.Entry) string {
+							return entry.Command.Settings.SubCommands.Channel.Options.Channel.Description
+						}),
 						Required: true,
 						ChannelTypes: []discord.ChannelType{
 							discord.ChannelTypeGuildVoice, discord.ChannelTypeGuildStageVoice,

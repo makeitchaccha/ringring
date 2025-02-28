@@ -193,3 +193,14 @@ func Get(locale discord.Locale) Entry {
 
 	return fallback
 }
+
+// Help localization of the bot commands
+func Localizations(valueFunc func(entry Entry) string) map[discord.Locale]string {
+	locales := make(map[discord.Locale]string)
+
+	for locale := range locales {
+		locales[locale] = valueFunc(Get(locale))
+	}
+
+	return locales
+}
