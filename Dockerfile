@@ -6,8 +6,6 @@ COPY go.mod go.sum ./
 RUN go mod download
 COPY . .
 ARG CGO_ENABLED=1
-ARG GOOS=linux
-ARG GOARCH=amd64
 RUN go build -ldflags="-s -w" -o ringring cmd/ringring/main.go
 
 # Stage 2: Create a small image with the Go binary
