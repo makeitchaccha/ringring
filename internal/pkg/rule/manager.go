@@ -5,10 +5,10 @@ import (
 	"gorm.io/gorm"
 )
 
-type Manager interface {
+type Repository interface {
 	// UpdateRule updates the rule for the given guild, category or channel
-	SetRule(scope Scope, id snowflake.ID, rule Rule)
-	RemoveRule(scope Scope, id snowflake.ID)
+	SaveRule(scope Scope, id snowflake.ID, rule Rule)
+	DeleteRule(scope Scope, id snowflake.ID)
 
 	// ScopedEffectiveRule returns the rule for the specifier, and the kind of scope it was found in
 	ScopedEffectiveRule(guildID snowflake.ID, categoryID *snowflake.ID, channelID snowflake.ID) (Rule, Scope)
@@ -21,91 +21,52 @@ type Manager interface {
 	ChannelRule(channelID snowflake.ID) (Rule, bool)
 }
 
-var _ Manager = (*managerImpl)(nil)
+var _ Repository = (*repositoryImpl)(nil)
 
-type managerImpl struct {
-	db         *gorm.DB
-	guilds     map[snowflake.ID]Rule
-	categories map[snowflake.ID]Rule
-	channels   map[snowflake.ID]Rule
+type repositoryImpl struct {
+	db *gorm.DB
 }
 
-func NewManager(db *gorm.DB) Manager {
-	mgr := &managerImpl{
-		db:         db,
-		guilds:     make(map[snowflake.ID]Rule),
-		categories: make(map[snowflake.ID]Rule),
-		channels:   make(map[snowflake.ID]Rule),
+func CreateRepository(db *gorm.DB) Repository {
+	mgr := &repositoryImpl{
+		db: db,
 	}
 
 	db.AutoMigrate(&RuleModel{})
 
-	var rules []RuleModel
-	mgr.db.Find(&rules)
-
-	for _, rule := range rules {
-		scope, id, r := rule.toRule()
-		mgr.setRuleInternal(scope, id, r)
-	}
-
 	return mgr
 }
 
-func (m *managerImpl) SetRule(scope Scope, id snowflake.ID, rule Rule) {
-	m.setRuleInternal(scope, id, rule)
+func (m *repositoryImpl) SaveRule(scope Scope, id snowflake.ID, rule Rule) {
 	model := newModel(scope, id, rule)
 	m.db.Save(&model)
 }
 
-func (m *managerImpl) setRuleInternal(scope Scope, id snowflake.ID, rule Rule) {
-	switch scope {
-	case ScopeGuild:
-		m.guilds[id] = rule
-	case ScopeCategory:
-		m.categories[id] = rule
-	case ScopeChannel:
-		m.channels[id] = rule
-	}
-}
-
-func (m *managerImpl) RemoveRule(scope Scope, id snowflake.ID) {
-	m.removeRuleInternal(scope, id)
+func (m *repositoryImpl) DeleteRule(scope Scope, id snowflake.ID) {
 	m.db.Delete(&RuleModel{}, "scope = ? AND identifier = ?", int(scope), id)
 }
 
-func (m *managerImpl) removeRuleInternal(scope Scope, id snowflake.ID) {
-	switch scope {
-	case ScopeGuild:
-		delete(m.guilds, id)
-	case ScopeCategory:
-		delete(m.categories, id)
-	case ScopeChannel:
-		delete(m.channels, id)
-	}
-	m.db.Delete(&RuleModel{}, "scope = ? AND identifier = ?", int(scope), id)
-}
-
-func (m *managerImpl) ScopedEffectiveRule(guildID snowflake.ID, categoryID *snowflake.ID, channelID snowflake.ID) (Rule, Scope) {
-	if rule, ok := m.channels[channelID]; ok {
+func (m *repositoryImpl) ScopedEffectiveRule(guildID snowflake.ID, categoryID *snowflake.ID, channelID snowflake.ID) (Rule, Scope) {
+	if rule, ok := m.ChannelRule(channelID); ok {
 		return rule, ScopeChannel
 	}
-	if categoryID != nil {
-		if rule, ok := m.categories[*categoryID]; ok {
+	if categoryID != nil { // categoryID is nil when the channel is not in a category
+		if rule, ok := m.CategoryRule(*categoryID); ok {
 			return rule, ScopeCategory
 		}
 	}
-	if rule, ok := m.guilds[guildID]; ok {
+	if rule, ok := m.GuildRule(guildID); ok {
 		return rule, ScopeGuild
 	}
 	return Rule{Enabled: false}, ScopeGuild
 }
 
-func (m *managerImpl) EffectiveRule(guildID snowflake.ID, categoryID *snowflake.ID, channelID snowflake.ID) Rule {
+func (m *repositoryImpl) EffectiveRule(guildID snowflake.ID, categoryID *snowflake.ID, channelID snowflake.ID) Rule {
 	rule, _ := m.ScopedEffectiveRule(guildID, categoryID, channelID)
 	return rule
 }
 
-func (m *managerImpl) Rule(scope Scope, id snowflake.ID) (Rule, bool) {
+func (m *repositoryImpl) Rule(scope Scope, id snowflake.ID) (Rule, bool) {
 	switch scope {
 	case ScopeGuild:
 		return m.GuildRule(id)
@@ -117,17 +78,38 @@ func (m *managerImpl) Rule(scope Scope, id snowflake.ID) (Rule, bool) {
 	return Rule{}, false
 }
 
-func (m *managerImpl) GuildRule(guildID snowflake.ID) (Rule, bool) {
-	rule, ok := m.guilds[guildID]
-	return rule, ok
+func (m *repositoryImpl) GuildRule(guildID snowflake.ID) (Rule, bool) {
+	var model RuleModel
+	if err := m.db.First(&model, "scope = ? AND identifier = ?", int(ScopeGuild), guildID).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return Rule{}, false
+		}
+		panic(err)
+	}
+	_, _, rule := model.toRule()
+	return rule, true
 }
 
-func (m *managerImpl) CategoryRule(categoryID snowflake.ID) (Rule, bool) {
-	rule, ok := m.categories[categoryID]
-	return rule, ok
+func (m *repositoryImpl) CategoryRule(categoryID snowflake.ID) (Rule, bool) {
+	var model RuleModel
+	if err := m.db.First(&model, "scope = ? AND identifier = ?", int(ScopeCategory), categoryID).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return Rule{}, false
+		}
+		panic(err)
+	}
+	_, _, rule := model.toRule()
+	return rule, true
 }
 
-func (m *managerImpl) ChannelRule(channelID snowflake.ID) (Rule, bool) {
-	rule, ok := m.channels[channelID]
-	return rule, ok
+func (m *repositoryImpl) ChannelRule(channelID snowflake.ID) (Rule, bool) {
+	var model RuleModel
+	if err := m.db.First(&model, "scope = ? AND identifier = ?", int(ScopeChannel), channelID).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return Rule{}, false
+		}
+		panic(err)
+	}
+	_, _, rule := model.toRule()
+	return rule, true
 }

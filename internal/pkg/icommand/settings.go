@@ -17,7 +17,7 @@ var _ command.Command = (*Settings)(nil)
 
 type Settings struct {
 	Form form.Manager
-	Rule rule.Manager
+	Rule rule.Repository
 }
 
 func (s *Settings) Name() string {
@@ -204,7 +204,7 @@ func (s *Settings) generatePreview(event *events.ApplicationCommandInteractionCr
 		}
 
 		builder := discord.NewEmbedBuilder()
-		rule, scope := s.Rule.ScopedEffectiveRule(*event.GuildID(), channel.ParentID(), channel.ID())
+		rule, scope := s.Rule.GetEffectiveRuleByScope(*event.GuildID(), channel.ParentID(), channel.ID())
 
 		if !rule.Enabled {
 			builder.SetTitlef("❌ %s", channel.Name())

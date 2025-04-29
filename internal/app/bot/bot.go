@@ -37,7 +37,7 @@ type botImpl struct {
 
 	callManager    call.Manager
 	formManager    form.Manager
-	ruleManager    rule.Manager
+	ruleManager    rule.Repository
 	commandManager command.Manager
 
 	cancelClose map[snowflake.ID]chan<- struct{}
@@ -73,7 +73,7 @@ func New(token string, db *gorm.DB, opts ...ConfigOpt) (Bot, error) {
 	client.AddEventListeners(bot.NewListenerFunc(formManager.OnComponentInteractionCreate))
 
 	// initialize rule manager
-	ruleManager := rule.NewManager(db)
+	ruleManager := rule.CreateRepository(db)
 
 	// initialize command for bot
 	commandManager := command.NewManager()

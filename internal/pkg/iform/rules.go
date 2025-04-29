@@ -26,7 +26,7 @@ const (
 
 type Rule struct {
 	owner       snowflake.ID
-	ruleManager rule.Manager
+	ruleManager rule.Repository
 	locale      discord.Locale
 
 	HasDeleteButton bool
@@ -61,7 +61,7 @@ const (
 	settingButtonCancel        = "bc"
 )
 
-func GuildRule(owner snowflake.ID, ruleManager rule.Manager, locale discord.Locale, guildID snowflake.ID) *Rule {
+func GuildRule(owner snowflake.ID, ruleManager rule.Repository, locale discord.Locale, guildID snowflake.ID) *Rule {
 	return &Rule{
 		owner:           owner,
 		ruleManager:     ruleManager,
@@ -77,7 +77,7 @@ func GuildRule(owner snowflake.ID, ruleManager rule.Manager, locale discord.Loca
 	}
 }
 
-func CategoryRule(owner snowflake.ID, ruleManager rule.Manager, locale discord.Locale, categoryId snowflake.ID) *Rule {
+func CategoryRule(owner snowflake.ID, ruleManager rule.Repository, locale discord.Locale, categoryId snowflake.ID) *Rule {
 	return &Rule{
 		owner:           owner,
 		ruleManager:     ruleManager,
@@ -93,7 +93,7 @@ func CategoryRule(owner snowflake.ID, ruleManager rule.Manager, locale discord.L
 	}
 }
 
-func ChannelRule(owner snowflake.ID, ruleManager rule.Manager, locale discord.Locale, channelId snowflake.ID) *Rule {
+func ChannelRule(owner snowflake.ID, ruleManager rule.Repository, locale discord.Locale, channelId snowflake.ID) *Rule {
 	return &Rule{
 		owner:           owner,
 		ruleManager:     ruleManager,
@@ -399,7 +399,7 @@ func (s *Rule) Handle(event *events.ComponentInteractionCreate) error {
 			}
 		}
 
-		s.ruleManager.SetRule(
+		s.ruleManager.SaveRule(
 			s.Scope,
 			s.ScopeIdentifier,
 			r,
@@ -413,7 +413,7 @@ func (s *Rule) Handle(event *events.ComponentInteractionCreate) error {
 		s.confirm = confirmDelete
 		return event.UpdateMessage(s.update(locale.Get(s.locale).Form.Settings.Buttons.Delete.ConfirmStatus))
 	case settingButtonConfirmDelete:
-		s.ruleManager.RemoveRule(s.Scope, s.ScopeIdentifier)
+		s.ruleManager.DeleteRule(s.Scope, s.ScopeIdentifier)
 		return event.UpdateMessage(discord.NewMessageUpdateBuilder().SetContent("deleted").SetEmbeds().SetContainerComponents().Build())
 
 	case settingButtonCancel:
