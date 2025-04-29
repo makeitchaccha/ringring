@@ -1,3 +1,7 @@
+# vcs
+.git
+.gitignore
+
 # runtime
 .env
 config.yml
