@@ -204,7 +204,7 @@ func (s *Settings) generatePreview(event *events.ApplicationCommandInteractionCr
 		}
 
 		builder := discord.NewEmbedBuilder()
-		rule, scope := s.Rule.GetEffectiveRuleByScope(*event.GuildID(), channel.ParentID(), channel.ID())
+		rule, scope := s.Rule.ScopedEffectiveRule(*event.GuildID(), channel.ParentID(), channel.ID())
 
 		if !rule.Enabled {
 			builder.SetTitlef("❌ %s", channel.Name())
