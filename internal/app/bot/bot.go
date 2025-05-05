@@ -37,7 +37,7 @@ type botImpl struct {
 
 	callManager    call.Manager
 	formManager    form.Manager
-	ruleManager    rule.Repository
+	ruleRepository rule.Repository
 	commandManager command.Manager
 
 	cancelClose map[snowflake.ID]chan<- struct{}
@@ -73,11 +73,11 @@ func New(token string, db *gorm.DB, opts ...ConfigOpt) (Bot, error) {
 	client.AddEventListeners(bot.NewListenerFunc(formManager.OnComponentInteractionCreate))
 
 	// initialize rule manager
-	ruleManager := rule.CreateRepository(db)
+	ruleRepository := rule.CreateRepository(db)
 
 	// initialize command for bot
 	commandManager := command.NewManager()
-	commandManager.Register(&icommand.Settings{Form: formManager, Rule: ruleManager})
+	commandManager.Register(&icommand.Settings{Form: formManager, Rule: ruleRepository})
 	client.AddEventListeners(bot.NewListenerFunc(commandManager.OnCommandInteractionCreate))
 
 	// initialize call manager
@@ -94,7 +94,7 @@ func New(token string, db *gorm.DB, opts ...ConfigOpt) (Bot, error) {
 		font:           font,
 		callManager:    callManager,
 		formManager:    formManager,
-		ruleManager:    ruleManager,
+		ruleRepository: ruleRepository,
 		commandManager: commandManager,
 		cancelClose:    make(map[snowflake.ID]chan<- struct{}),
 	}
@@ -186,7 +186,7 @@ func (b *botImpl) onJoinVoiceChannel(channelID snowflake.ID, member *discord.Mem
 			fmt.Fprintln(os.Stderr, "channel is supposed to be a guild channel")
 			return
 		}
-		rule, scope := b.ruleManager.ScopedEffectiveRule(guildChannel.GuildID(), guildChannel.ParentID(), guildChannel.ID())
+		rule, scope := b.ruleRepository.ScopedEffectiveRule(guildChannel.GuildID(), guildChannel.ParentID(), guildChannel.ID())
 		fmt.Println("rule:", rule, "scope:", scope)
 		if !rule.Enabled {
 			fmt.Println("rule is not enabled, skip")

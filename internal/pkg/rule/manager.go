@@ -15,10 +15,10 @@ type Repository interface {
 	// EffectiveRule returns the rule for the given specifier.
 	EffectiveRule(guildID snowflake.ID, categoryID *snowflake.ID, channelID snowflake.ID) Rule
 
-	Rule(scope Scope, id snowflake.ID) (Rule, bool)
-	GuildRule(guildID snowflake.ID) (Rule, bool)
-	CategoryRule(categoryID snowflake.ID) (Rule, bool)
-	ChannelRule(channelID snowflake.ID) (Rule, bool)
+	FindRule(scope Scope, id snowflake.ID) (Rule, bool)
+	FindGuildRule(guildID snowflake.ID) (Rule, bool)
+	FindCategoryRule(categoryID snowflake.ID) (Rule, bool)
+	FindChannelRule(channelID snowflake.ID) (Rule, bool)
 }
 
 var _ Repository = (*repositoryImpl)(nil)
@@ -47,15 +47,15 @@ func (m *repositoryImpl) DeleteRule(scope Scope, id snowflake.ID) {
 }
 
 func (m *repositoryImpl) ScopedEffectiveRule(guildID snowflake.ID, categoryID *snowflake.ID, channelID snowflake.ID) (Rule, Scope) {
-	if rule, ok := m.ChannelRule(channelID); ok {
+	if rule, ok := m.FindChannelRule(channelID); ok {
 		return rule, ScopeChannel
 	}
 	if categoryID != nil { // categoryID is nil when the channel is not in a category
-		if rule, ok := m.CategoryRule(*categoryID); ok {
+		if rule, ok := m.FindCategoryRule(*categoryID); ok {
 			return rule, ScopeCategory
 		}
 	}
-	if rule, ok := m.GuildRule(guildID); ok {
+	if rule, ok := m.FindGuildRule(guildID); ok {
 		return rule, ScopeGuild
 	}
 	return Rule{Enabled: false}, ScopeGuild
@@ -66,19 +66,19 @@ func (m *repositoryImpl) EffectiveRule(guildID snowflake.ID, categoryID *snowfla
 	return rule
 }
 
-func (m *repositoryImpl) Rule(scope Scope, id snowflake.ID) (Rule, bool) {
+func (m *repositoryImpl) FindRule(scope Scope, id snowflake.ID) (Rule, bool) {
 	switch scope {
 	case ScopeGuild:
-		return m.GuildRule(id)
+		return m.FindGuildRule(id)
 	case ScopeCategory:
-		return m.CategoryRule(id)
+		return m.FindCategoryRule(id)
 	case ScopeChannel:
-		return m.ChannelRule(id)
+		return m.FindChannelRule(id)
 	}
 	return Rule{}, false
 }
 
-func (m *repositoryImpl) GuildRule(guildID snowflake.ID) (Rule, bool) {
+func (m *repositoryImpl) FindGuildRule(guildID snowflake.ID) (Rule, bool) {
 	var model RuleModel
 	if err := m.db.First(&model, "scope = ? AND identifier = ?", int(ScopeGuild), guildID).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
@@ -90,7 +90,7 @@ func (m *repositoryImpl) GuildRule(guildID snowflake.ID) (Rule, bool) {
 	return rule, true
 }
 
-func (m *repositoryImpl) CategoryRule(categoryID snowflake.ID) (Rule, bool) {
+func (m *repositoryImpl) FindCategoryRule(categoryID snowflake.ID) (Rule, bool) {
 	var model RuleModel
 	if err := m.db.First(&model, "scope = ? AND identifier = ?", int(ScopeCategory), categoryID).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
@@ -102,7 +102,7 @@ func (m *repositoryImpl) CategoryRule(categoryID snowflake.ID) (Rule, bool) {
 	return rule, true
 }
 
-func (m *repositoryImpl) ChannelRule(channelID snowflake.ID) (Rule, bool) {
+func (m *repositoryImpl) FindChannelRule(channelID snowflake.ID) (Rule, bool) {
 	var model RuleModel
 	if err := m.db.First(&model, "scope = ? AND identifier = ?", int(ScopeChannel), channelID).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {

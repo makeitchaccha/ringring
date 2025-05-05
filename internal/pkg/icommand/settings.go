@@ -150,7 +150,7 @@ func (s *Settings) Execute(event *events.ApplicationCommandInteractionCreate) er
 	switch *data.SubCommandName {
 	case "guild":
 		form = iform.GuildRule(event.User().ID, s.Rule, event.Locale(), *event.GuildID())
-		if rule, ok := s.Rule.GuildRule(*event.GuildID()); ok {
+		if rule, ok := s.Rule.FindGuildRule(*event.GuildID()); ok {
 			form.HasDeleteButton = true
 			form.Apply(rule)
 		}
@@ -158,7 +158,7 @@ func (s *Settings) Execute(event *events.ApplicationCommandInteractionCreate) er
 	case "category":
 		category := data.Channel("category")
 		form = iform.CategoryRule(event.User().ID, s.Rule, event.Locale(), category.ID)
-		if rule, ok := s.Rule.CategoryRule(category.ID); ok {
+		if rule, ok := s.Rule.FindCategoryRule(category.ID); ok {
 			form.HasDeleteButton = true
 			form.Apply(rule)
 		}
@@ -166,7 +166,7 @@ func (s *Settings) Execute(event *events.ApplicationCommandInteractionCreate) er
 	case "channel":
 		channel := data.Channel("channel")
 		form = iform.ChannelRule(event.User().ID, s.Rule, event.Locale(), channel.ID)
-		if rule, ok := s.Rule.ChannelRule(channel.ID); ok {
+		if rule, ok := s.Rule.FindChannelRule(channel.ID); ok {
 			form.HasDeleteButton = true
 			form.Apply(rule)
 		}
