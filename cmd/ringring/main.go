@@ -36,7 +36,7 @@ func main() {
 		opts = append(opts, bot.WithFont(config.Font))
 	}
 
-	bot, err := bot.New(os.Getenv("DISCORD_TOKEN"), db, opts...)
+	bot, err := bot.New(config.Token, db, opts...)
 
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "failed to create bot:", err)
