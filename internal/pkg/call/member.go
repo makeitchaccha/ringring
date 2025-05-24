@@ -10,9 +10,9 @@ type Member struct {
 	id                snowflake.ID
 	name              string
 	online            bool
-	lastJoin          time.Time
+	lastUpdate        time.Time
 	duration          time.Duration
-	onlineSections    []section
+	onlineSections    []sectionWithStatus
 	streamingSections []section
 }
 
@@ -21,27 +21,60 @@ type section struct {
 	end   time.Time
 }
 
+type sectionWithStatus struct {
+	section
+	mute bool
+	deaf bool
+}
+
+func (s sectionWithStatus) IsSameStatus(other sectionWithStatus) bool {
+	return s.mute == other.mute && s.deaf == other.deaf
+}
+
 func NewMember(userID snowflake.ID, name string) *Member {
 	return &Member{
 		id:                userID,
 		name:              name,
 		online:            false,
-		lastJoin:          time.Time{},
+		lastUpdate:        time.Time{},
 		duration:          0,
-		onlineSections:    make([]section, 0),
+		onlineSections:    make([]sectionWithStatus, 0),
 		streamingSections: make([]section, 0),
 	}
 }
 
-func (m *Member) MarkAsOnline(now time.Time) {
+func (m *Member) MarkAsOnline(now time.Time, muted, deaf bool) {
 	if m.online {
 		panic("member already online")
 	}
 
 	m.online = true
-	m.lastJoin = now
+	m.lastUpdate = now
 
-	m.onlineSections = append(m.onlineSections, section{start: now})
+	section := sectionWithStatus{mute: muted, deaf: deaf}
+	section.start = now
+	m.onlineSections = append(m.onlineSections, section)
+}
+
+func (m *Member) UpdateStatus(now time.Time, muted, deaf bool) {
+	if !m.online {
+		panic("member not online")
+	}
+
+	l := len(m.onlineSections)
+
+	after := sectionWithStatus{mute: muted, deaf: deaf}
+	if m.onlineSections[l-1].IsSameStatus(after) {
+		return
+	}
+
+	// calculate the duration of the last section
+	m.duration += now.Sub(m.lastUpdate)
+
+	m.onlineSections[l-1].end = now
+	after.start = now
+	m.onlineSections = append(m.onlineSections, after)
+	m.lastUpdate = now
 }
 
 func (m *Member) UnmarkAsOnline(now time.Time) {
@@ -50,7 +83,7 @@ func (m *Member) UnmarkAsOnline(now time.Time) {
 	}
 
 	m.online = false
-	m.duration += now.Sub(m.lastJoin)
+	m.duration += now.Sub(m.lastUpdate)
 
 	l := len(m.onlineSections)
 	m.onlineSections[l-1].end = now
@@ -75,7 +108,7 @@ func (m *Member) HasStreamed() bool {
 
 func (m Member) calculateDuration(now time.Time) time.Duration {
 	if m.online {
-		return m.duration + now.Sub(m.lastJoin)
+		return m.duration + now.Sub(m.lastUpdate)
 	}
 
 	return m.duration

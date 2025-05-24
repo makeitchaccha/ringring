@@ -14,7 +14,8 @@ import (
 type Handler interface {
 	RegisterMember(userID snowflake.ID, member *discord.Member)
 	IsRegistered(userID snowflake.ID) bool
-	MemberJoin(userID snowflake.ID, now time.Time)
+	MemberJoin(userID snowflake.ID, now time.Time, mute, deaf bool)
+	MemberUpdate(userID snowflake.ID, now time.Time, mute, deaf bool)
 	MemberLeave(userID snowflake.ID, now time.Time) (isEmpty bool)
 	MemberStartStreaming(userID snowflake.ID, time time.Time)
 	MemberStopStreaming(userID snowflake.ID, time time.Time)
@@ -71,14 +72,23 @@ func (h *handlerImpl) IsRegistered(userID snowflake.ID) bool {
 	return ok
 }
 
-func (h *handlerImpl) MemberJoin(userID snowflake.ID, now time.Time) {
+func (h *handlerImpl) MemberJoin(userID snowflake.ID, now time.Time, mute, deaf bool) {
 	member, ok := h.call.MemberMap[userID]
 	if !ok {
 		panic("member not registered")
 	}
 
 	h.call.Onlines++
-	member.MarkAsOnline(now)
+	member.MarkAsOnline(now, mute, deaf)
+}
+
+func (h *handlerImpl) MemberUpdate(userID snowflake.ID, now time.Time, mute, deaf bool) {
+	member, ok := h.call.MemberMap[userID]
+	if !ok {
+		panic("member not registered")
+	}
+
+	member.UpdateStatus(now, mute, deaf)
 }
 
 func (h *handlerImpl) MemberLeave(userID snowflake.ID, now time.Time) bool {

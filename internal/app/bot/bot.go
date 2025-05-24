@@ -172,20 +172,27 @@ func (b *botImpl) onVoiceStateUpdate(event *events.GuildVoiceStateUpdate) {
 	}
 
 	// then, the user just updated voice state
+	handler, ok := b.callManager.Get(*event.VoiceState.ChannelID)
+	if !ok {
+		return
+	}
+
+	mute := mute(event.VoiceState)
+	deaf := deaf(event.VoiceState)
+	now := time.Now()
+	handler.MemberUpdate(event.Member.User.ID, now, mute, deaf)
+
 	if event.VoiceState.SelfStream != event.OldVoiceState.SelfStream {
 		fmt.Println("streaming state updated")
-		handler, ok := b.callManager.Get(*event.VoiceState.ChannelID)
-		if !ok {
-			return
-		}
 		if event.VoiceState.SelfStream {
 			handler.MemberStartStreaming(event.Member.User.ID, time.Now())
 		} else {
 			handler.MemberStopStreaming(event.Member.User.ID, time.Now())
 		}
-		handler.Update()
-		return
 	}
+
+	handler.Update()
+
 }
 
 func (b *botImpl) onJoinVoiceChannel(channelID snowflake.ID, member *discord.Member, afterVoiceState *discord.VoiceState) {
@@ -227,7 +234,10 @@ func (b *botImpl) onJoinVoiceChannel(channelID snowflake.ID, member *discord.Mem
 		handler.RegisterMember(member.User.ID, member)
 	}
 
-	handler.MemberJoin(member.User.ID, now)
+	mute := mute(*afterVoiceState)
+	deaf := deaf(*afterVoiceState)
+	handler.MemberJoin(member.User.ID, now, mute, deaf)
+
 	// if the user is streaming, right after joining the voice channel,
 	// we need to mark the user as streaming
 	if afterVoiceState.SelfStream {
@@ -280,4 +290,12 @@ func (b *botImpl) onLeaveVoiceChannel(channelID snowflake.ID, member *discord.Me
 			delete(b.cancelClose, channelID)
 		}()
 	}
+}
+
+func mute(voiceState discord.VoiceState) bool {
+	return voiceState.SelfMute || voiceState.GuildMute
+}
+
+func deaf(voiceState discord.VoiceState) bool {
+	return voiceState.SelfDeaf || voiceState.GuildDeaf
 }

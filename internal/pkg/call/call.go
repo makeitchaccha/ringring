@@ -124,7 +124,14 @@ func (c *Call) GenerateTimeline(rest rest.Rest, now time.Time, frame time.Time, 
 			if log.end.IsZero() {
 				log.end = now
 			}
-			onlineSeries.AddSection(log.start, log.end)
+			alpha := 1.0
+			if log.mute {
+				alpha = 0.8
+			}
+			if log.deaf {
+				alpha = 0.6
+			}
+			onlineSeries.AddSection(log.start, log.end, timeline.WithAlpha(alpha))
 		}
 		e.AddSeries(onlineSeries.Build())
 		if m.HasStreamed() {
