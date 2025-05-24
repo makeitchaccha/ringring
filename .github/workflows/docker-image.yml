@@ -119,6 +119,13 @@ jobs:
             type=semver,pattern={{major}}
             type=sha,prefix=
 
+      - name: Download digests
+        uses: actions/download-artifact@v4
+        with:
+          path: /tmp/digests
+          pattern: digests-*
+          merge-multiple: true
+          
       - name: Create manifest list and push
         working-directory: /tmp/digests
         run: |
