@@ -1,23 +1,36 @@
-# Stage 1: Build the Go app
-FROM golang:1.23 AS builder
-
-RUN apt update && apt install -y make && rm -rf /var/lib/apt/lists/*
+# syntax=docker/dockerfile:1.4
+# Use for caching Go modules and build cache.
+# --- Stage 1: Build the Go application ---
+FROM golang:1.23-alpine AS builder
 
 WORKDIR /build
-COPY go.mod go.sum ./
-RUN go mod download
-COPY . .
-ARG CGO_ENABLED=1
-RUN make build
 
-# Stage 2: Create a small image with the Go binary
-FROM debian:stable-slim AS runner
+COPY go.mod go.sum ./
+
+RUN go mod download
+
+COPY . .
+
+ENV CGO_ENABLED=0
+
+RUN --mount=type=cache,target=/root/.cache/go-build \ 
+    go build -ldflags="-s -w" -o build/ringring cmd/ringring/main.go && \
+    go build -ldflags="-s -w" -o build/deploy cmd/deploy/main.go
+
+# --- Stage 2: Create a small runtime image with OS-managed timezone data ---
+FROM alpine:latest AS runner
+
 WORKDIR /app
-RUN apt update
-RUN apt install -y sqlite3 ca-certificates && rm -rf /var/lib/apt/lists/*
+
+RUN apk add --no-cache ca-certificates tzdata && rm -rf /var/cache/apk/*
+
 COPY --from=builder /build/build/ringring ./ringring
 COPY --from=builder /build/build/deploy ./deploy
+
 COPY --from=builder /build/locales ./locales
 
-# Command to run the executable
+# DOCUMENTATION PURPOSE: you can set the timezone when launching the container
+# ENV TZ=UTC
+
+# Define the command to run your executable when the container starts.
 CMD [ "/app/ringring" ]
