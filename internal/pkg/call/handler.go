@@ -16,6 +16,8 @@ type Handler interface {
 	IsRegistered(userID snowflake.ID) bool
 	MemberJoin(userID snowflake.ID, now time.Time)
 	MemberLeave(userID snowflake.ID, now time.Time) (isEmpty bool)
+	MemberStartStreaming(userID snowflake.ID, time time.Time)
+	MemberStopStreaming(userID snowflake.ID, time time.Time)
 
 	Update() error
 	Close(t time.Time) error
@@ -76,7 +78,7 @@ func (h *handlerImpl) MemberJoin(userID snowflake.ID, now time.Time) {
 	}
 
 	h.call.Onlines++
-	member.MarkAsJoin(now)
+	member.MarkAsOnline(now)
 }
 
 func (h *handlerImpl) MemberLeave(userID snowflake.ID, now time.Time) bool {
@@ -86,9 +88,25 @@ func (h *handlerImpl) MemberLeave(userID snowflake.ID, now time.Time) bool {
 	}
 
 	h.call.Onlines--
-	member.MarkAsLeave(now)
+	member.UnmarkAsOnline(now)
 
 	return h.call.Onlines == 0
+}
+
+func (h *handlerImpl) MemberStartStreaming(userID snowflake.ID, now time.Time) {
+	member, ok := h.call.MemberMap[userID]
+	if !ok {
+		panic("member not registered")
+	}
+	member.MarkAsStreaming(now)
+}
+
+func (h *handlerImpl) MemberStopStreaming(userID snowflake.ID, now time.Time) {
+	member, ok := h.call.MemberMap[userID]
+	if !ok {
+		panic("member not registered")
+	}
+	member.UnmarkAsStreaming(now)
 }
 
 func (h *handlerImpl) Update() error {

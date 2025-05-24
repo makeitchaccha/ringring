@@ -2,6 +2,7 @@ package call
 
 import (
 	"fmt"
+	"image/color"
 	"strings"
 	"time"
 
@@ -117,12 +118,24 @@ func (c *Call) GenerateTimeline(rest rest.Rest, now time.Time, frame time.Time, 
 		if err != nil {
 			return nil, err
 		}
-		e := timeline.NewEntryBuilder(avatar, nil)
-		for _, log := range m.logs {
-			if log.leave.IsZero() {
-				log.leave = now
+		e := timeline.NewEntryBuilder(avatar)
+		onlineSeries := timeline.NewSeriesBuilder(2.0/7.0, nil)
+		for _, log := range m.onlineSections {
+			if log.end.IsZero() {
+				log.end = now
 			}
-			e.AddSection(log.join, log.leave)
+			onlineSeries.AddSection(log.start, log.end)
+		}
+		e.AddSeries(onlineSeries.Build())
+		if m.HasStreamed() {
+			streamingSeries := timeline.NewSeriesBuilder(0.5/7.0, color.RGBA64{R: 0xFFFF, G: 0x0000, B: 0x0000, A: 0xFFFF})
+			for _, log := range m.streamingSections {
+				if log.end.IsZero() {
+					log.end = now
+				}
+				streamingSeries.AddSection(log.start, log.end)
+			}
+			e.AddSeries(streamingSeries.Build())
 		}
 		builder.AddEntries(e.Build())
 	}
