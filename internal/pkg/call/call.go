@@ -11,9 +11,9 @@ import (
 	"github.com/disgoorg/snowflake/v2"
 	"github.com/golang/freetype/truetype"
 	"github.com/makeitchaccha/design/timeline"
-	"github.com/yuyaprgrm/ringring/internal/pkg/cache"
-	"github.com/yuyaprgrm/ringring/internal/pkg/locale"
-	"github.com/yuyaprgrm/ringring/internal/pkg/rule"
+	"github.com/makeitchaccha/ringring/internal/pkg/cache"
+	"github.com/makeitchaccha/ringring/internal/pkg/locale"
+	"github.com/makeitchaccha/ringring/internal/pkg/rule"
 )
 
 type Call struct {

@@ -10,8 +10,8 @@ import (
 	"github.com/disgoorg/disgo/discord"
 	"github.com/disgoorg/disgo/rest"
 	"github.com/disgoorg/snowflake/v2"
+	"github.com/makeitchaccha/ringring/pkg/extstd"
 	"github.com/nfnt/resize"
-	"github.com/yuyaprgrm/ringring/pkg/extstd"
 	"golang.org/x/image/webp"
 )
 

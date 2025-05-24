@@ -6,11 +6,11 @@ import (
 	"github.com/disgoorg/disgo/discord"
 	"github.com/disgoorg/disgo/events"
 	"github.com/disgoorg/json"
-	"github.com/yuyaprgrm/ringring/internal/pkg/iform"
-	"github.com/yuyaprgrm/ringring/internal/pkg/locale"
-	"github.com/yuyaprgrm/ringring/internal/pkg/rule"
-	"github.com/yuyaprgrm/ringring/pkg/command"
-	"github.com/yuyaprgrm/ringring/pkg/form"
+	"github.com/makeitchaccha/ringring/internal/pkg/iform"
+	"github.com/makeitchaccha/ringring/internal/pkg/locale"
+	"github.com/makeitchaccha/ringring/internal/pkg/rule"
+	"github.com/makeitchaccha/ringring/pkg/command"
+	"github.com/makeitchaccha/ringring/pkg/form"
 )
 
 var _ command.Command = (*Settings)(nil)

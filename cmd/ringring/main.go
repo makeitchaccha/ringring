@@ -7,9 +7,9 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/yuyaprgrm/ringring/internal/app/bot"
-	"github.com/yuyaprgrm/ringring/internal/pkg/config"
-	"github.com/yuyaprgrm/ringring/internal/pkg/locale"
+	"github.com/makeitchaccha/ringring/internal/app/bot"
+	"github.com/makeitchaccha/ringring/internal/pkg/config"
+	"github.com/makeitchaccha/ringring/internal/pkg/locale"
 	"gorm.io/gorm"
 )
 

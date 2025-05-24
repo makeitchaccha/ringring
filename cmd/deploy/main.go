@@ -4,9 +4,9 @@ import (
 	"os"
 
 	"github.com/disgoorg/disgo"
-	"github.com/yuyaprgrm/ringring/internal/pkg/icommand"
-	"github.com/yuyaprgrm/ringring/internal/pkg/locale"
-	"github.com/yuyaprgrm/ringring/pkg/command"
+	"github.com/makeitchaccha/ringring/internal/pkg/icommand"
+	"github.com/makeitchaccha/ringring/internal/pkg/locale"
+	"github.com/makeitchaccha/ringring/pkg/command"
 )
 
 func main() {

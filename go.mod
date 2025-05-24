@@ -1,4 +1,4 @@
-module github.com/yuyaprgrm/ringring
+module github.com/makeitchaccha/ringring
 
 go 1.23.4
 
