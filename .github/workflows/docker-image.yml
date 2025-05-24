@@ -52,6 +52,7 @@ jobs:
           images: ${{ env.REGISTRY_IMAGE }}
 
       - name: Build and Push ${{ matrix.arch }} Image
+        id: build
         uses: docker/build-push-action@v5
         with:
           context: .
@@ -65,7 +66,7 @@ jobs:
         run: |
           mkdir -p /tmp/digests
           digest="${{ steps.build.outputs.digest }}"
-          touch "/tmp/digests/${digest:}"
+          touch "/tmp/digests/${digest#sha256:}"
 
       - name: Upload digest
         uses: actions/upload-artifact@v4
