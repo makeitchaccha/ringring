@@ -149,6 +149,7 @@ func (b *botImpl) onVoiceStateUpdate(event *events.GuildVoiceStateUpdate) {
 	// 1. user leaves voice channel (nil <- before id)
 	// 2. user joins voice channel (after id <- nil)
 	// 3. user moves to another voice channel (after id <- before id, after id != before id)
+	// 4. user just updated voice state (after id == before id)
 
 	fmt.Println("voice state update")
 	if event.VoiceState.ChannelID == nil {
@@ -167,6 +168,22 @@ func (b *botImpl) onVoiceStateUpdate(event *events.GuildVoiceStateUpdate) {
 		fmt.Println("move voice channel")
 		b.onLeaveVoiceChannel(*event.OldVoiceState.ChannelID, &event.Member)
 		b.onJoinVoiceChannel(*event.VoiceState.ChannelID, &event.Member)
+		return
+	}
+
+	// then, the user just updated voice state
+	if event.VoiceState.SelfStream != event.OldVoiceState.SelfStream {
+		fmt.Println("streaming state updated")
+		handler, ok := b.callManager.Get(*event.VoiceState.ChannelID)
+		if !ok {
+			return
+		}
+		if event.VoiceState.SelfStream {
+			handler.MemberStartStreaming(event.Member.User.ID, time.Now())
+		} else {
+			handler.MemberStopStreaming(event.Member.User.ID, time.Now())
+		}
+		handler.Update()
 		return
 	}
 }
