@@ -128,7 +128,7 @@ func (c *Call) GenerateTimeline(rest rest.Rest, now time.Time, frame time.Time, 
 		}
 		e.AddSeries(onlineSeries.Build())
 		if m.HasStreamed() {
-			streamingSeries := timeline.NewSeriesBuilder(0.5/7.0, color.RGBA64{R: 0xFFFF, G: 0x0000, B: 0x0000, A: 0xFFFF})
+			streamingSeries := timeline.NewSeriesBuilder(0.5/7.0, color.RGBA64{R: 0xB000, G: 0x0000, B: 0x0000, A: 0xFFFF})
 			for _, log := range m.streamingSections {
 				if log.end.IsZero() {
 					log.end = now
