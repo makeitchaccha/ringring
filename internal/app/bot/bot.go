@@ -125,7 +125,7 @@ func (b *botImpl) onGuildJoin(event *events.GuildJoin) {
 			fmt.Fprintln(os.Stderr, "failed to get member")
 			return
 		}
-		b.onJoinVoiceChannel(*voiceState.ChannelID, &member)
+		b.onJoinVoiceChannel(*voiceState.ChannelID, &member, &voiceState)
 	})
 }
 
@@ -139,7 +139,7 @@ func (b *botImpl) onGuildsReady(event *events.GuildsReady) {
 				fmt.Fprintln(os.Stderr, "failed to get member")
 				return
 			}
-			b.onJoinVoiceChannel(*voiceState.ChannelID, &member)
+			b.onJoinVoiceChannel(*voiceState.ChannelID, &member, &voiceState)
 		})
 	})
 }
@@ -154,20 +154,20 @@ func (b *botImpl) onVoiceStateUpdate(event *events.GuildVoiceStateUpdate) {
 	fmt.Println("voice state update")
 	if event.VoiceState.ChannelID == nil {
 		fmt.Println("leave voice channel")
-		b.onLeaveVoiceChannel(*event.OldVoiceState.ChannelID, &event.Member)
+		b.onLeaveVoiceChannel(*event.OldVoiceState.ChannelID, &event.Member, &event.OldVoiceState)
 		return
 	}
 
 	if event.OldVoiceState.ChannelID == nil {
 		fmt.Println("join voice channel")
-		b.onJoinVoiceChannel(*event.VoiceState.ChannelID, &event.Member)
+		b.onJoinVoiceChannel(*event.VoiceState.ChannelID, &event.Member, &event.VoiceState)
 		return
 	}
 
 	if *event.VoiceState.ChannelID != *event.OldVoiceState.ChannelID {
 		fmt.Println("move voice channel")
-		b.onLeaveVoiceChannel(*event.OldVoiceState.ChannelID, &event.Member)
-		b.onJoinVoiceChannel(*event.VoiceState.ChannelID, &event.Member)
+		b.onLeaveVoiceChannel(*event.OldVoiceState.ChannelID, &event.Member, &event.OldVoiceState)
+		b.onJoinVoiceChannel(*event.VoiceState.ChannelID, &event.Member, &event.VoiceState)
 		return
 	}
 
@@ -188,7 +188,7 @@ func (b *botImpl) onVoiceStateUpdate(event *events.GuildVoiceStateUpdate) {
 	}
 }
 
-func (b *botImpl) onJoinVoiceChannel(channelID snowflake.ID, member *discord.Member) {
+func (b *botImpl) onJoinVoiceChannel(channelID snowflake.ID, member *discord.Member, afterVoiceState *discord.VoiceState) {
 	now := time.Now()
 	handler, ok := b.callManager.Get(channelID)
 	if !ok {
@@ -226,7 +226,14 @@ func (b *botImpl) onJoinVoiceChannel(channelID snowflake.ID, member *discord.Mem
 	if !handler.IsRegistered(member.User.ID) {
 		handler.RegisterMember(member.User.ID, member)
 	}
+
 	handler.MemberJoin(member.User.ID, now)
+	// if the user is streaming, right after joining the voice channel,
+	// we need to mark the user as streaming
+	if afterVoiceState.SelfStream {
+		handler.MemberStartStreaming(member.User.ID, now)
+	}
+
 	handler.Update()
 	if cancel, ok := b.cancelClose[channelID]; ok {
 		cancel <- struct{}{} // notify to cancel shutdown sequence
@@ -234,13 +241,20 @@ func (b *botImpl) onJoinVoiceChannel(channelID snowflake.ID, member *discord.Mem
 	}
 }
 
-func (b *botImpl) onLeaveVoiceChannel(channelID snowflake.ID, member *discord.Member) {
+func (b *botImpl) onLeaveVoiceChannel(channelID snowflake.ID, member *discord.Member, beforeVoiceState *discord.VoiceState) {
 	now := time.Now()
 	handler, ok := b.callManager.Get(channelID)
 	if !ok {
 		return
 	}
+
+	// if the user is streaming, right before leaving the voice channel,
+	// we need to unmark the user as streaming
+	if beforeVoiceState.SelfStream {
+		handler.MemberStopStreaming(member.User.ID, now)
+	}
 	isEmpty := handler.MemberLeave(member.User.ID, now)
+
 	handler.Update()
 
 	if isEmpty {
