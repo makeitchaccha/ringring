@@ -21,11 +21,11 @@ jobs:
         include:
           - arch: amd64
             platform: linux/amd64
-            runner: ubuntu-latest # This is an amd64 runner
+            runner: ubuntu-latest
             cache_scope: amd64-builder
           - arch: arm64
             platform: linux/arm64/v8
-            runner: ubuntu-22.04-arm64 # The native ARM64 runner
+            runner: ubuntu-24.04-arm
             cache_scope: arm64-builder
 
     steps:
