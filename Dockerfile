@@ -7,16 +7,15 @@ WORKDIR /build
 
 COPY go.mod go.sum ./
 
-RUN --mount=type=cache,target=/go/pkg/mod,rw \
-    --mount=type=cache,target=/root/.cache/go-build,rw \
-    go mod download
+RUN go mod download
 
 COPY . .
 
 ENV CGO_ENABLED=0
 
-RUN go build -ldflags="-s -w" -o build/ringring cmd/ringring/main.go
-RUN go build -ldflags="-s -w" -o build/deploy cmd/deploy/main.go
+RUN --mount=type=cache,target=/root/.cache/go-build \ 
+    go build -ldflags="-s -w" -o build/ringring cmd/ringring/main.go && \
+    go build -ldflags="-s -w" -o build/deploy cmd/deploy/main.go
 
 # --- Stage 2: Create a small runtime image with OS-managed timezone data ---
 FROM alpine:latest AS runner
