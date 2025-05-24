@@ -12,6 +12,9 @@ on:
       - 'v*'
   pull_request:
 
+env:
+  REGISTRY_IMAGE: ${{ github.repository }}
+
 jobs:
   build:
     runs-on: ${{ matrix.runner }}
@@ -46,27 +49,33 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/${{ github.repository }}
-          tags: |
-            type=ref,event=branch
-            type=ref,event=pr
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=semver,pattern={{major}}
-            type=sha,prefix=
+          images: ${{ env.REGISTRY_IMAGE }}
 
       - name: Build and Push ${{ matrix.arch }} Image
         uses: docker/build-push-action@v5
         with:
           context: .
           platforms: ${{ matrix.platform }}
-          push: true
           cache-from: type=gha,scope=${{ matrix.cache_scope }}
           cache-to: type=gha,mode=max,scope=${{ matrix.cache_scope }}
-          tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          outputs: type=image,name=${{ env.REGISTRY_IMAGE }},push-by-digest=true,name-canonical=true,push=true
 
-  create-manifest:
+      - name: Export digest
+        run: |
+          mkdir -p /tmp/digests
+          digest="${{ steps.build.outputs.digest }}"
+          touch "/tmp/digests/${digest#sha256:}"
+
+      - name: Upload digest
+        uses: actions/upload-artifact@v4
+        with:
+          name: digests-${{ env.PLATFORM_PAIR }}
+          path: /tmp/digests/*
+          if-no-files-found: error
+          retention-days: 1
+
+  merge:
     runs-on: ubuntu-latest
     needs: build
     steps:
@@ -93,28 +102,12 @@ jobs:
             type=semver,pattern={{major}}
             type=sha,prefix=
 
-      - name: Create and Push Manifest
+      - name: Create manifest list and push
+        working-directory: /tmp/digests
         run: |
-          # The tags need to be parsed from the meta action output
-          # This script assumes the tags are newline-separated from docker/metadata-action
-          # And it picks the first tag to be the manifest tag
-          TAGS="${{ steps.meta.outputs.tags }}"
-          echo "All tags generated: ${TAGS}"
-          # Pick the first tag as the main manifest tag
-          MANIFEST_TAG=$(echo "$TAGS" | head -n 1)
-          echo "Selected manifest tag: ${MANIFEST_TAG}"
+          docker buildx imagetools create $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
+            $(printf '${{ env.REGISTRY_IMAGE }}@sha256:%s ' *)
 
-          # Ensure the tag is non-empty before proceeding
-          if [ -z "$MANIFEST_TAG" ]; then
-            echo "Error: No manifest tag generated."
-            exit 1
-          fi
-
-          # Use buildx imagetools to create and push the manifest list
-          # It combines the images already pushed by the individual build jobs
-          docker buildx imagetools create \
-            --tag "${MANIFEST_TAG}" \
-            ghcr.io/${{ github.repository }}@sha256:${{ needs.build.outputs.amd64_digest }} \
-            ghcr.io/${{ github.repository }}@sha256:${{ needs.build.outputs.arm64_digest }}
-        env:
-          DOCKER_CLI_EXPERIMENTAL: enabled # Required for imagetools
+      - name: Inspect image
+        run: |
+          docker buildx imagetools inspect ${{ env.REGISTRY_IMAGE }}:${{ steps.meta.outputs.version }}
