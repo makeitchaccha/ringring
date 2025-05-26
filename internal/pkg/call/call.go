@@ -14,6 +14,7 @@ import (
 	"github.com/makeitchaccha/ringring/internal/pkg/cache"
 	"github.com/makeitchaccha/ringring/internal/pkg/locale"
 	"github.com/makeitchaccha/ringring/internal/pkg/rule"
+	"github.com/makeitchaccha/ringring/internal/pkg/util"
 )
 
 type Call struct {
@@ -119,7 +120,8 @@ func (c *Call) GenerateTimeline(rest rest.Rest, now time.Time, frame time.Time, 
 			return nil, err
 		}
 		e := timeline.NewEntryBuilder(avatar)
-		onlineSeries := timeline.NewSeriesBuilder(2.0/7.0, nil)
+		c := util.TransformColorWithSpecificLuminance(util.ExtractMainColor(avatar), 0.7)
+		onlineSeries := timeline.NewSeriesBuilder(2.0/7.0, c)
 		for _, log := range m.onlineSections {
 			if log.end.IsZero() {
 				log.end = now
