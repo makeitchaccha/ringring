@@ -15,8 +15,8 @@ import (
 	"github.com/disgoorg/snowflake/v2"
 	"github.com/golang/freetype/truetype"
 	"github.com/makeitchaccha/ringring/internal/pkg/call"
+	"github.com/makeitchaccha/ringring/internal/pkg/i18n"
 	"github.com/makeitchaccha/ringring/internal/pkg/icommand"
-	"github.com/makeitchaccha/ringring/internal/pkg/locale"
 	"github.com/makeitchaccha/ringring/internal/pkg/rule"
 	"github.com/makeitchaccha/ringring/pkg/command"
 	"github.com/makeitchaccha/ringring/pkg/form"
@@ -53,7 +53,7 @@ func WithFont(font *truetype.Font) ConfigOpt {
 
 func New(token string, db *gorm.DB, opts ...ConfigOpt) (Bot, error) {
 
-	locale.Init("./locales")
+	i18n.Init("./locales")
 
 	client, err := disgo.New(token,
 		bot.WithCacheConfigOpts(

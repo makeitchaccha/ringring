@@ -12,7 +12,7 @@ import (
 	"github.com/golang/freetype/truetype"
 	"github.com/makeitchaccha/design/timeline"
 	"github.com/makeitchaccha/ringring/internal/pkg/cache"
-	"github.com/makeitchaccha/ringring/internal/pkg/locale"
+	"github.com/makeitchaccha/ringring/internal/pkg/i18n"
 	"github.com/makeitchaccha/ringring/internal/pkg/rule"
 	"github.com/makeitchaccha/ringring/internal/pkg/util"
 )
@@ -56,7 +56,7 @@ func (c *Call) elapsed(now time.Time) time.Duration {
 }
 
 func (c *Call) OngoingEmbed(now time.Time) discord.Embed {
-	n := locale.Get(c.Locale).Notification
+	n := i18n.Get(c.Locale).Notification
 	builder := discord.NewEmbedBuilder().
 		SetTitle(n.Ongoing.Title).
 		SetDescriptionf(n.Ongoing.Description, c.ChannelName).
@@ -77,7 +77,7 @@ func (c *Call) OngoingEmbed(now time.Time) discord.Embed {
 }
 
 func (c *Call) EndedEmbed() discord.Embed {
-	n := locale.Get(c.Locale).Notification
+	n := i18n.Get(c.Locale).Notification
 	builder := discord.NewEmbedBuilder().
 		SetTitle(n.Ended.Title).
 		SetDescriptionf(n.Ended.Description, c.ChannelName).
@@ -196,7 +196,7 @@ func localizeDuration(l discord.Locale, d time.Duration, withSecond bool) string
 	minutes := int(d.Minutes()) % 60
 	seconds := int(d.Seconds()) % 60
 
-	t := locale.Get(l).Notification.Common.Timeformat
+	t := i18n.Get(l).Notification.Common.Timeformat
 
 	var sb strings.Builder
 	if days > 0 {

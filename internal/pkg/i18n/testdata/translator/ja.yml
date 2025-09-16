@@ -1,0 +1,7 @@
+lang: Japanese (JA)
+greeting: こんにちは
+farewell: さようなら
+# only-in-en: commented out to test missing key handling
+nested:
+  welcome: 私たちのアプリケーションへようこそ！
+  thanks: アプリをご利用いただきありがとうございます。

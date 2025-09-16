@@ -8,7 +8,7 @@ import (
 	"github.com/disgoorg/disgo/discord"
 	"github.com/disgoorg/disgo/events"
 	"github.com/disgoorg/snowflake/v2"
-	"github.com/makeitchaccha/ringring/internal/pkg/locale"
+	"github.com/makeitchaccha/ringring/internal/pkg/i18n"
 	"github.com/makeitchaccha/ringring/internal/pkg/rule"
 	"github.com/makeitchaccha/ringring/pkg/extstd"
 	"github.com/makeitchaccha/ringring/pkg/form"
@@ -146,7 +146,7 @@ func (s *Rule) update(status string) discord.MessageUpdate {
 }
 
 func (s *Rule) buildEmbed(status string) discord.Embed {
-	e := locale.Get(s.locale).Form.Settings.Fields
+	e := i18n.Get(s.locale).Form.Settings.Fields
 	builder := discord.NewEmbedBuilder().
 		SetTitle(s.title()).
 		SetDescription(s.description()).
@@ -166,11 +166,11 @@ func (s *Rule) buildEmbed(status string) discord.Embed {
 func (s *Rule) title() string {
 	switch s.Scope {
 	case rule.ScopeGuild:
-		return locale.Get(s.locale).Form.Settings.Title.Guild
+		return i18n.Get(s.locale).Form.Settings.Title.Guild
 	case rule.ScopeCategory:
-		return fmt.Sprintf(locale.Get(s.locale).Form.Settings.Title.Category, discord.ChannelMention(s.ScopeIdentifier))
+		return fmt.Sprintf(i18n.Get(s.locale).Form.Settings.Title.Category, discord.ChannelMention(s.ScopeIdentifier))
 	case rule.ScopeChannel:
-		return fmt.Sprintf(locale.Get(s.locale).Form.Settings.Title.Channel, discord.ChannelMention(s.ScopeIdentifier))
+		return fmt.Sprintf(i18n.Get(s.locale).Form.Settings.Title.Channel, discord.ChannelMention(s.ScopeIdentifier))
 	}
 	return ""
 }
@@ -178,11 +178,11 @@ func (s *Rule) title() string {
 func (s *Rule) description() string {
 	switch s.Scope {
 	case rule.ScopeGuild:
-		return locale.Get(s.locale).Form.Settings.Description.Guild
+		return i18n.Get(s.locale).Form.Settings.Description.Guild
 	case rule.ScopeCategory:
-		return locale.Get(s.locale).Form.Settings.Description.Category
+		return i18n.Get(s.locale).Form.Settings.Description.Category
 	case rule.ScopeChannel:
-		return locale.Get(s.locale).Form.Settings.Description.Channel
+		return i18n.Get(s.locale).Form.Settings.Description.Channel
 	}
 	return ""
 }
@@ -196,7 +196,7 @@ func (s *Rule) buildComponents() []discord.ContainerComponent {
 		return s.buildConfirmDeleteComponents()
 	}
 
-	f := locale.Get(s.locale).Form.Settings.Fields
+	f := i18n.Get(s.locale).Form.Settings.Fields
 
 	channel := discord.NewChannelSelectMenu(settingKeyNotificationChannel, f.NotificationChannel.Title).
 		WithChannelTypes(discord.ChannelTypeGuildText).
@@ -278,7 +278,7 @@ func (s *Rule) buildComponents() []discord.ContainerComponent {
 	}
 
 	// enable/disable, save, discard, delete buttons
-	b := locale.Get(s.locale).Form.Settings.Buttons
+	b := i18n.Get(s.locale).Form.Settings.Buttons
 
 	toggle := discord.NewPrimaryButton(b.ToggleEnability[(!s.Enabled).String()], settingKeyEnabled)
 	save := discord.NewSuccessButton(b.Save.Primary, settingButtonSave)
@@ -299,7 +299,7 @@ func (s *Rule) buildComponents() []discord.ContainerComponent {
 }
 
 func (s *Rule) buildConfirmSaveComponents() []discord.ContainerComponent {
-	b := locale.Get(s.locale).Form.Settings.Buttons.Save
+	b := i18n.Get(s.locale).Form.Settings.Buttons.Save
 
 	confirm := discord.NewSuccessButton(b.Confirm, settingButtonConfirmSave)
 	cancel := discord.NewSecondaryButton(b.Cancel, settingButtonCancel)
@@ -310,7 +310,7 @@ func (s *Rule) buildConfirmSaveComponents() []discord.ContainerComponent {
 }
 
 func (s *Rule) buildConfirmDeleteComponents() []discord.ContainerComponent {
-	b := locale.Get(s.locale).Form.Settings.Buttons.Delete
+	b := i18n.Get(s.locale).Form.Settings.Buttons.Delete
 
 	confirm := discord.NewDangerButton(b.Confirm, settingButtonConfirmDelete)
 	cancel := discord.NewSecondaryButton(b.Cancel, settingButtonCancel)
@@ -324,13 +324,13 @@ func (s *Rule) Handle(event *events.ComponentInteractionCreate) error {
 
 	if s.owner != event.User().ID {
 		event.CreateMessage(discord.NewMessageCreateBuilder().
-			SetContent(locale.Get(s.locale).Form.Settings.Error.NotOwner).
+			SetContent(i18n.Get(s.locale).Form.Settings.Error.NotOwner).
 			SetEphemeral(true).
 			Build(),
 		)
 	}
 
-	e := locale.Get(s.locale).Form.Settings.Fields
+	e := i18n.Get(s.locale).Form.Settings.Fields
 
 	switch event.Data.CustomID() {
 
@@ -378,7 +378,7 @@ func (s *Rule) Handle(event *events.ComponentInteractionCreate) error {
 			return event.UpdateMessage(s.update(err.Error()))
 		}
 		s.confirm = confirmSave
-		return event.UpdateMessage(s.update(locale.Get(s.locale).Form.Settings.Buttons.Save.ConfirmStatus))
+		return event.UpdateMessage(s.update(i18n.Get(s.locale).Form.Settings.Buttons.Save.ConfirmStatus))
 	case settingButtonConfirmSave:
 		if err := s.validate(); err != nil {
 			return event.UpdateMessage(s.update(err.Error()))
@@ -404,14 +404,14 @@ func (s *Rule) Handle(event *events.ComponentInteractionCreate) error {
 			s.ScopeIdentifier,
 			r,
 		)
-		return event.UpdateMessage(s.update(locale.Get(s.locale).Form.Settings.Validate.Success))
+		return event.UpdateMessage(s.update(i18n.Get(s.locale).Form.Settings.Validate.Success))
 
 	case settingButtonDiscard:
 		return event.UpdateMessage(discord.NewMessageUpdateBuilder().SetContent("discard").SetEmbeds().SetContainerComponents().Build())
 
 	case settingButtonDelete:
 		s.confirm = confirmDelete
-		return event.UpdateMessage(s.update(locale.Get(s.locale).Form.Settings.Buttons.Delete.ConfirmStatus))
+		return event.UpdateMessage(s.update(i18n.Get(s.locale).Form.Settings.Buttons.Delete.ConfirmStatus))
 	case settingButtonConfirmDelete:
 		s.ruleManager.DeleteRule(s.Scope, s.ScopeIdentifier)
 		return event.UpdateMessage(discord.NewMessageUpdateBuilder().SetContent("deleted").SetEmbeds().SetContainerComponents().Build())
@@ -433,18 +433,18 @@ func (s *Rule) validate() error {
 	messages := []string{}
 
 	if s.NotificationChannel.IsNone() {
-		messages = append(messages, locale.Get(s.locale).Form.Settings.Validate.Error.NoNotificationChannel)
+		messages = append(messages, i18n.Get(s.locale).Form.Settings.Validate.Error.NoNotificationChannel)
 	}
 
 	if s.ChannelFormat.IsNone() {
-		messages = append(messages, locale.Get(s.locale).Form.Settings.Validate.Error.NoChannelFormat)
+		messages = append(messages, i18n.Get(s.locale).Form.Settings.Validate.Error.NoChannelFormat)
 	}
 
 	if s.Privacy.IsNone() {
-		messages = append(messages, locale.Get(s.locale).Form.Settings.Validate.Error.NoPrivacy)
+		messages = append(messages, i18n.Get(s.locale).Form.Settings.Validate.Error.NoPrivacy)
 	} else {
 		if s.Privacy.Unwrap().ShouldDisplayName() && s.UsernameFormat.IsNone() {
-			messages = append(messages, locale.Get(s.locale).Form.Settings.Validate.Error.NoUsernameFormat)
+			messages = append(messages, i18n.Get(s.locale).Form.Settings.Validate.Error.NoUsernameFormat)
 		}
 	}
 

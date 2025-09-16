@@ -1,0 +1,7 @@
+lang: English (US)
+greeting: Hello
+farewell: Goodbye
+only-in-en: This string exists only in the English file.
+nested:
+  welcome: Welcome to our application!
+  thanks: Thank you for using our app.

@@ -1,6 +1,6 @@
 module github.com/makeitchaccha/ringring
 
-go 1.23.4
+go 1.24
 
 require (
 	github.com/disgoorg/disgo v0.18.16
@@ -8,6 +8,7 @@ require (
 	github.com/disgoorg/snowflake/v2 v2.0.3
 	github.com/glebarez/sqlite v1.11.0
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0
+	github.com/lucasb-eyer/go-colorful v1.2.0
 	github.com/makeitchaccha/design v0.3.4
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
 	github.com/stretchr/testify v1.10.0
@@ -34,7 +35,6 @@ require (
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/kr/text v0.2.0 // indirect
-	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
 	github.com/makeitchaccha/rendering v0.0.9 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/ncruces/go-strftime v0.1.9 // indirect

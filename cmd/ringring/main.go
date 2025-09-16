@@ -9,13 +9,13 @@ import (
 
 	"github.com/makeitchaccha/ringring/internal/app/bot"
 	"github.com/makeitchaccha/ringring/internal/pkg/config"
-	"github.com/makeitchaccha/ringring/internal/pkg/locale"
+	"github.com/makeitchaccha/ringring/internal/pkg/i18n"
 	"gorm.io/gorm"
 )
 
 func main() {
 
-	locale.Init("./locales")
+	i18n.Init("./locales")
 
 	config, err := config.New("config.yml")
 
