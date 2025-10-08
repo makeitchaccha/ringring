@@ -6,7 +6,7 @@ import (
 	"github.com/disgoorg/disgo/discord"
 	"github.com/disgoorg/disgo/handler"
 
-	"github.com/disgoorg/bot-template/bottemplate"
+	"github.com/makeitchaccha/ringring/ringring"
 )
 
 var version = discord.SlashCommandCreate{
@@ -14,7 +14,7 @@ var version = discord.SlashCommandCreate{
 	Description: "version command",
 }
 
-func VersionHandler(b *bottemplate.Bot) handler.CommandHandler {
+func VersionHandler(b *ringring.Bot) handler.CommandHandler {
 	return func(e *handler.CommandEvent) error {
 		return e.CreateMessage(discord.MessageCreate{
 			Content: fmt.Sprintf("Version: %s\nCommit: %s", b.Version, b.Commit),

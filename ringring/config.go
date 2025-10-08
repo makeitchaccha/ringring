@@ -1,4 +1,4 @@
-package bottemplate
+package ringring
 
 import (
 	"fmt"

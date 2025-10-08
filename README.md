@@ -47,19 +47,19 @@ token = "..."
 The bot template is licensed under the [Apache License 2.0][5].
 
 
-[0]: https://goreportcard.com/badge/github.com/disgoorg/bot-template
-[1]: https://goreportcard.com/report/github.com/disgoorg/bot-template
+[0]: https://goreportcard.com/badge/github.com/makeitchaccha/ringring
+[1]: https://goreportcard.com/report/github.com/makeitchaccha/ringring
 
-[2]: https://img.shields.io/github/go-mod/go-version/disgoorg/bot-template
+[2]: https://img.shields.io/github/go-mod/go-version/makeitchaccha/ringring
 [3]: https://golang.org/doc/devel/release.html
 
-[4]: https://img.shields.io/github/license/disgoorg/bot-template
+[4]: https://img.shields.io/github/license/makeitchaccha/ringring
 [5]: LICENSE
 
-[6]: https://github.com/disgoorg/bot-template/actions/workflows/docker.yml/badge.svg
-[7]: https://github.com/disgoorg/bot-template/actions/workflows/docker.yml
+[6]: https://github.com/makeitchaccha/ringring/actions/workflows/docker.yml/badge.svg
+[7]: https://github.com/makeitchaccha/ringring/actions/workflows/docker.yml
 
-[8]: https://github.com/disgoorg/bot-template/actions/workflows/test.yml/badge.svg
-[9]: https://github.com/disgoorg/bot-template/actions/workflows/test.yml
+[8]: https://github.com/makeitchaccha/ringring/actions/workflows/test.yml/badge.svg
+[9]: https://github.com/makeitchaccha/ringring/actions/workflows/test.yml
 
 [10]: https://discord.com/developers/applications

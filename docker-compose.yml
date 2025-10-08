@@ -1,6 +1,6 @@
 services:
   bot:
-    image: ghcr.io/disgoorg/bot-template
+    image: ghcr.io/makeitchaccha/ringring
     restart: unless-stopped
     volumes:
       - ./config.toml:/var/lib/config.toml
